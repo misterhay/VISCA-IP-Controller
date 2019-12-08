@@ -133,21 +133,3 @@ port_entry.insert(0, port)
 Button(root, text='Save', command=lambda: store_network_values(ip_entry.get(), int(port_entry.get()))).grid(row=7, column=5)
 
 root.mainloop()
-
-
-
-'''
-def show_entry_fields():
-    print("First Name: %s\nLast Name: %s" % (e1.get(), e2.get()))
-master = tk.Tk()
-tk.Label(master, text="First Name").grid(row=0)
-tk.Label(master, text="Last Name").grid(row=1)
-e1 = tk.Entry(master)
-e2 = tk.Entry(master)
-e1.grid(row=0, column=1)
-e2.grid(row=1, column=1)
-e1.insert(10, "Miller")
-e2.insert(10, "Jill")
-tk.Button(master, text='Show', command=show_entry_fields).grid(row=3, column=1, sticky=tk.W, pady=4)
-tk.mainloop()
-'''
