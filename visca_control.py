@@ -1,9 +1,9 @@
 # https://pro.sony/s3/2019/01/16020225/AES6100121.pdf
+# https://gitlab.viarezo.fr/2018corona/viscaoverip/blob/master/camera2.py
 
 import socket
 
 ip = '192.168.0.100'
-#ip = '10.0.0.42'
 #ip = '127.0.0.1'
 port = 52381 # or maybe 52380
 buffer_size = 1024
@@ -31,7 +31,11 @@ Pan-tiltDrive home  8x 01 06 04 FF
 '''
 
 def testing():
-    message = b'\x81\x01\x04\x00\x02\xFF' # power on
+    #message = b'\x81\x01\x04\x00\x02\xFF' # power on
+    payload_type = '01 00' # 0100 command, 0110 inquiry, 0200 control, and 0120 device settings
+    payload_length = '00 05'
+    sequence_number = '00 00 00 01'
+    message = '81 01 04 00 02 FF'
     s.sendto(message, (ip, port))
     print('Sent', message)
 
@@ -83,6 +87,7 @@ def store_network_values(ip_value, port_value):
 # GUI
 from tkinter import *
 root = Tk()
+root.title('VISCA IP Camera Controller')
 Label(root, text='VISCA IP Camera Controller').grid(row=0, columnspan=100)
 Button(root, text=1, command=lambda: create_and_send_message([4, 9, 2, 0])).grid(row=1, column=0)
 Button(root, text=2, command=lambda: create_and_send_message([4, 9, 2, 1])).grid(row=1, column=1)
