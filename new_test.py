@@ -1,4 +1,4 @@
-
+'''
 POS_1=["1200","EF00"]
 POS_2=["ED00","0400"]
 sequence_number = 1
@@ -41,7 +41,9 @@ print('Sent', message)
 i = 0
 while i < 2:
     payload_type = bytearray.fromhex('01 00')
-    payload = bytearray.fromhex('81 01 04 00 03 FF')
+    #payload = bytearray.fromhex('81 01 04 07 24 FF') # zoom in, this continues to max zoom
+    #payload = bytearray.fromhex('81 01 04 00 03 FF') # off
+    payload = bytearray.fromhex('81 01 04 00 02 FF') # on
     sequence_number = i.to_bytes(4, 'big')
     payload_length = len(payload).to_bytes(2, 'big')
     message = payload_type + payload_length + sequence_number + payload
@@ -52,10 +54,13 @@ while i < 2:
 
 # b'\x01\x00\x00\x0f\x00\x00\x00\x01\x81\x01\x06\x02\x15\x15\x01\x02\x00\x00\x0e\x0f\x00\x00\xff'
 
+reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
+
 import socket
 
 ip = '192.168.0.100'
 #ip = '127.0.0.1'
 port = 52381
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
+s.sendto(reset_sequence_number_message,(ip, port))
 s.sendto(message, (ip, port))
