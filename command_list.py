@@ -45,10 +45,20 @@ pan_stop = '81 01 06 01 VV WW 03 03 FF'.replace('VV', str(VV))
 pan_home = '81 01 06 04 FF'
 pan_reset = '81 01 06 05 FF'
 
+focus_stop = '81 01 04 08 00 FF'
+focus_far = '8x 01 04 08 02 FF'
+focus_near = '8x 01 04 08 03 FF'
+focus_far_variable = '8x 01 04 08 2p FF'.replace('p', '7') # 0 low to 7 high
+focus_near_variable = '8x 01 04 08 3p FF'.replace('p', '7') # 0 low to 7 high
+focus_direct = '8x 01 04 48 0p 0q 0r 0s FF' #.replace('p', ) q, r, s
+focus_auto = '8x 01 04 38 02 FF'
+focus_manual = '8x 01 04 38 03 FF'
+focus_infinity = '8x 01 04 18 02 FF'
+
 
 '''
-i = 0
-while i < 1:
+i = 1
+while i < 2:
     payload_type = bytearray.fromhex('01 00')
     #payload = bytearray.fromhex('81 01 04 07 24 FF') # zoom in, this continues to max zoom
     #payload = bytearray.fromhex('81 01 04 00 03 FF') # off
@@ -86,9 +96,15 @@ def send_message(message_string, i):
 def reset_sequence_number():
     reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
     s.sendto(reset_sequence_number_message,(ip, port))
-    i = 0
+    i = 1
     return i
 
+i = reset_sequence_number()
+time.sleep(1)
 send_message(information_display_off, 1)
-time.sleep(100)
-send_message(memory_recall_0, 0)
+time.sleep(1)
+send_message(memory_recall_0, 1)
+time.sleep(1)
+send_message(zoom_tele, 2)
+time.sleep(1)
+send_message(zoom_stop, 3)
