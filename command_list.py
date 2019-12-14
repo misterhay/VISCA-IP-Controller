@@ -46,29 +46,14 @@ pan_home = '81 01 06 04 FF'
 pan_reset = '81 01 06 05 FF'
 
 focus_stop = '81 01 04 08 00 FF'
-focus_far = '8x 01 04 08 02 FF'
-focus_near = '8x 01 04 08 03 FF'
-focus_far_variable = '8x 01 04 08 2p FF'.replace('p', '7') # 0 low to 7 high
-focus_near_variable = '8x 01 04 08 3p FF'.replace('p', '7') # 0 low to 7 high
-focus_direct = '8x 01 04 48 0p 0q 0r 0s FF' #.replace('p', ) q, r, s
-focus_auto = '8x 01 04 38 02 FF'
-focus_manual = '8x 01 04 38 03 FF'
-focus_infinity = '8x 01 04 18 02 FF'
-
-
-'''
-i = 1
-while i < 2:
-    payload_type = bytearray.fromhex('01 00')
-    #payload = bytearray.fromhex('81 01 04 07 24 FF') # zoom in, this continues to max zoom
-    #payload = bytearray.fromhex('81 01 04 00 03 FF') # off
-    payload = bytearray.fromhex('81 01 04 00 02 FF') # on
-    sequence_number = i.to_bytes(4, 'big')
-    payload_length = len(payload).to_bytes(2, 'big')
-    message = payload_type + payload_length + sequence_number + payload
-    print(message)
-    i += 1
-'''
+focus_far = '81 01 04 08 02 FF'
+focus_near = '81 01 04 08 03 FF'
+focus_far_variable = '81 01 04 08 2p FF'.replace('p', '7') # 0 low to 7 high
+focus_near_variable = '81 01 04 08 3p FF'.replace('p', '7') # 0 low to 7 high
+focus_direct = '81 01 04 48 0p 0q 0r 0s FF' #.replace('p', ) q, r, s
+focus_auto = '81 01 04 38 02 FF'
+focus_manual = '81 01 04 38 03 FF'
+focus_infinity = '81 01 04 18 02 FF'
 
 
 
