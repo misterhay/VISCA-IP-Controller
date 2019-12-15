@@ -2,6 +2,7 @@
 # https://gitlab.viarezo.fr/2018corona/viscaoverip/blob/master/camera2.py
 
 import socket
+import binascii # for printing the messages we send, not really necessary
 
 ip = '192.168.0.100'
 port = 52381
@@ -9,7 +10,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
 
 buffer_size = 1024
 
-sequence_number = (1).to_bytes(4, 'big') # a global variable that we'll iterate each command, remember 0, 0, 0, 1
+sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
 reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
 
 # payloads
@@ -34,8 +35,8 @@ memory_recall = '81 01 04 3F 02 0p FF' # p: Memory number (=0 to F)
 #Pan-tilt Drive
 # VV: Pan speed setting 0x01 (low speed) to 0x18
 # WW: Tilt speed setting 0x01 (low speed) to 0x17
-pan_speed = 05
-tilt_speed = 05
+pan_speed = '05'
+tilt_speed = '05'
 # YYYY: Pan Position DE00 to 2200 (CENTER 0000)
 # ZZZZ: Tilt Position FC00 to 1200 (CENTER 0000)
 YYYY = '0000'
@@ -65,27 +66,26 @@ focus_auto = '81 01 04 38 02 FF'
 focus_manual = '81 01 04 38 03 FF'
 focus_infinity = '81 01 04 18 02 FF'
 
-def memory_recall(memory_number):
-	message_string = memory_recall.replace('p', str(memory_number))
-	message = send_message(message_string)
-	return message
-	
+def memory_recall_function(memory_number):
+    message_string = memory_recall.replace('p', str(memory_number))
+    message = send_message(message_string)
+    return message
 
-def memory_set(memory_number):
-	message_string = memory_set.replace('p', str(memory_number))
-	message = send_message(message_string)
-	return message
+def memory_set_function(memory_number):
+    message_string = memory_set.replace('p', str(memory_number))
+    message = send_message(message_string)
+    return message
 
 def send_message(message_string):
-	global sequence_number
+    global sequence_number
     payload_type = bytearray.fromhex('01 00')
     payload = bytearray.fromhex(message_string)
     payload_length = len(payload).to_bytes(2, 'big')
-    message = payload_type + payload_length + sequence_number + payload
+    message = payload_type + payload_length + sequence_number.to_bytes(4, 'big') + payload
     #s.sendto(reset_sequence_number_message,(ip, port))
     s.sendto(message, (ip, port))
+    print(binascii.hexlify(message), ip, port, sequence_number)
     sequence_number += 1
-    print(message, ip, port, i)
     return message
 
 def reset_sequence_number():
@@ -102,17 +102,19 @@ def store_network_values(ip_value, port_value):
     print(ip, port)
     return ip, port
 
+print('Resetting sequence number to', reset_sequence_number())
+
 # GUI
 from tkinter import *
 root = Tk()
 root.title('VISCA IP Camera Controller')
 Label(root, text='VISCA IP Camera Controller').grid(row=0, columnspan=100)
-Button(root, text=1, command=lambda: memory_recall(0)).grid(row=1, column=0)
-Button(root, text=2, command=lambda: memory_recall(0)).grid(row=1, column=1)
-Button(root, text=3, command=lambda: memory_recall(0)).grid(row=2, column=0)
-Button(root, text=4, command=lambda: smemory_recall(0)).grid(row=2, column=1)
-Button(root, text=5, command=lambda: memory_recall(0)).grid(row=3, column=0)
-Button(root, text=6, command=lambda: memory_recall(0)).grid(row=3, column=1)
+Button(root, text=1, command=lambda: memory_recall_function(0)).grid(row=1, column=0)
+Button(root, text=2, command=lambda: memory_recall_function(1)).grid(row=1, column=1)
+Button(root, text=3, command=lambda: memory_recall_function(2)).grid(row=2, column=0)
+Button(root, text=4, command=lambda: memory_recall_function(3)).grid(row=2, column=1)
+Button(root, text=5, command=lambda: memory_recall_function(4)).grid(row=3, column=0)
+Button(root, text=6, command=lambda: memory_recall_function(5)).grid(row=3, column=1)
 Button(root, text='Home', command=lambda: send_message(pan_home)).grid(row=4, column=0, columnspan=2, sticky=S)
 
 Button(root, text='Up', command=lambda: send_message(pan_up)).grid(row=1, column=3)
@@ -131,7 +133,7 @@ DownRight 8x 01 06 01 VV  WW 02 02 FF
 
 Button(root, text='In', command=lambda: send_message(zoom_tele)).grid(row=3, column=5)
 Button(root, text='Out', command=lambda: send_message(zoom_wide)).grid(row=4, column=5)
-#Button(root, text='Zoom Stop', command=lambda: send_message(zoom_stop)).grid(row=)
+Button(root, text='Zoom Stop', command=lambda: send_message(zoom_stop)).grid(row=4, column=6)
 Button(root, text='On', command=lambda: send_message(camera_on)).grid(row=1, column=6)
 
 '''
