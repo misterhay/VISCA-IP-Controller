@@ -121,42 +121,20 @@ Button(root, text='Up', command=lambda: send_message(pan_up)).grid(row=1, column
 Button(root, text='Left', command=lambda: send_message(pan_left)).grid(row=2, column=2)
 Button(root, text='Right', command=lambda: send_message(pan_right)).grid(row=2, column=4)
 Button(root, text='Down', command=lambda: send_message(pan_down)).grid(row=3, column=3)
+Button(root, text='UpLeft', command=lambda: send_message(pan_up_left)).grid(row=1, column=2)
+Button(root, text='UpRight', command=lambda: send_message(pan_up_right)).grid(row=1, column=4)
+Button(root, text='DownLeft', command=lambda: send_message(pan_down_left)).grid(row=3, column=2)
+Button(root, text='DownRight', command=lambda: send_message(pan_down_right)).grid(row=3, column=4)
 
-# Buttons: UpLeft, etc
-'''
-UpLeft 8x 01 06 01 VV  WW 01 01 FF
-UpRight 8x 01 06 01 VV  WW 02 01 FF
-DownLeft 8x 01 06 01 VV  WW 01 02 FF
-DownRight 8x 01 06 01 VV  WW 02 02 FF
-'''
 # slider to set speed for pan_speed and tilt_speed (0x01 to 0x17)
 
-Button(root, text='In', command=lambda: send_message(zoom_tele)).grid(row=3, column=5)
-Button(root, text='Out', command=lambda: send_message(zoom_wide)).grid(row=4, column=5)
+Button(root, text='Zoom In', command=lambda: send_message(zoom_tele)).grid(row=3, column=5)
+Button(root, text='Zoom Out', command=lambda: send_message(zoom_wide)).grid(row=4, column=5)
 Button(root, text='Zoom Stop', command=lambda: send_message(zoom_stop)).grid(row=4, column=6)
-Button(root, text='On', command=lambda: send_message(camera_on)).grid(row=1, column=6)
+Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=1, column=6)
 Button(root, text='Info Off', command=lambda: send_message(information_display_off)).grid(row=2, column=6)
 
-'''
-Label(root, text='8x,1,').grid(row=5, column=0)
-message_entry = Entry(root).grid(row=5, column=1, columnspan=4)
-#Button(root, text='Send', command=lambda: send_message(message_entry.get())).grid(row=5, column=4)
-Button(root, text='Send', command=lambda: print(message_entry.get())).grid(row=5, column=4)
-'''
-
-# IP
-Label(root, text='Camera IP:').grid(row=6, column=0, columnspan=2)
-ip_entry = Entry(root)
-ip_entry.grid(row=6, column=2, columnspan=3)
-#ip_entry.insert(0, '192.168.0.100')
-ip_entry.insert(0, ip)
-
-# Port
-Label(root, text='Port:').grid(row=7, column=0, columnspan=2)
-port_entry = Entry(root)
-port_entry.grid(row=7, column=2, columnspan=3)
-port_entry.insert(0, port)
-
-Button(root, text='Save', command=lambda: store_network_values(ip_entry.get(), int(port_entry.get()))).grid(row=7, column=5)
+# IP Label
+Label(root, text=ip).grid(row=6, column=0, columnspan=2)
 
 root.mainloop()
