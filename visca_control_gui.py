@@ -135,6 +135,7 @@ Button(root, text='In', command=lambda: send_message(zoom_tele)).grid(row=3, col
 Button(root, text='Out', command=lambda: send_message(zoom_wide)).grid(row=4, column=5)
 Button(root, text='Zoom Stop', command=lambda: send_message(zoom_stop)).grid(row=4, column=6)
 Button(root, text='On', command=lambda: send_message(camera_on)).grid(row=1, column=6)
+Button(root, text='Info Off', command=lambda: send_message(information_display_off)).grid(row=2, column=6)
 
 '''
 Label(root, text='8x,1,').grid(row=5, column=0)
