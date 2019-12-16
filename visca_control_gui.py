@@ -139,3 +139,10 @@ Button(root, text='Info Off', command=lambda: send_message(information_display_o
 Label(root, text=ip+' '+str(port)).grid(row=6, column=0, columnspan=2)
 
 root.mainloop()
+
+# start socket_receive
+s.bind(('', port))
+
+while True:
+    data = s.recvfrom(buffer_size)
+    print(data)
