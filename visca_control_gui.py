@@ -116,7 +116,7 @@ Button(root, text=4, command=lambda: memory_recall_function(3)).grid(row=2, colu
 Button(root, text=5, command=lambda: memory_recall_function(4)).grid(row=3, column=0)
 Button(root, text=6, command=lambda: memory_recall_function(5)).grid(row=3, column=1)
 
-Button(root, text='Home', command=lambda: send_message(pan_home)).grid(row=2, column=3, columnspan=2, sticky=S)
+Button(root, text='Home', command=lambda: send_message(pan_home)).grid(row=2, column=3)
 Button(root, text='Up', command=lambda: send_message(pan_up)).grid(row=1, column=3)
 Button(root, text='Left', command=lambda: send_message(pan_left)).grid(row=2, column=2)
 Button(root, text='Right', command=lambda: send_message(pan_right)).grid(row=2, column=4)
@@ -128,13 +128,14 @@ Button(root, text='DownRight', command=lambda: send_message(pan_down_right)).gri
 
 # slider to set speed for pan_speed and tilt_speed (0x01 to 0x17)
 
-Button(root, text='Zoom In', command=lambda: send_message(zoom_tele)).grid(row=3, column=5)
-Button(root, text='Zoom Out', command=lambda: send_message(zoom_wide)).grid(row=4, column=5)
-Button(root, text='Zoom Stop', command=lambda: send_message(zoom_stop)).grid(row=4, column=6)
+Button(root, text='Focus Far', command=lambda: send_message(focus_far)).grid(row=1, column=5)
+Button(root, text='Zoom In', command=lambda: send_message(zoom_tele)).grid(row=2, column=5)
+Button(root, text='Zoom Out', command=lambda: send_message(zoom_wide)).grid(row=3, column=5)
+Button(root, text='Zoom Stop', command=lambda: send_message(zoom_stop)).grid(row=3, column=6)
 Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=1, column=6)
 Button(root, text='Info Off', command=lambda: send_message(information_display_off)).grid(row=2, column=6)
 
 # IP Label
-Label(root, text=ip+' '+port).grid(row=6, column=0, columnspan=2)
+Label(root, text=ip+' '+str(port)).grid(row=6, column=0, columnspan=2)
 
 root.mainloop()
