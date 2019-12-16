@@ -115,8 +115,8 @@ Button(root, text=3, command=lambda: memory_recall_function(2)).grid(row=2, colu
 Button(root, text=4, command=lambda: memory_recall_function(3)).grid(row=2, column=1)
 Button(root, text=5, command=lambda: memory_recall_function(4)).grid(row=3, column=0)
 Button(root, text=6, command=lambda: memory_recall_function(5)).grid(row=3, column=1)
-Button(root, text='Home', command=lambda: send_message(pan_home)).grid(row=4, column=0, columnspan=2, sticky=S)
 
+Button(root, text='Home', command=lambda: send_message(pan_home)).grid(row=2, column=3, columnspan=2, sticky=S)
 Button(root, text='Up', command=lambda: send_message(pan_up)).grid(row=1, column=3)
 Button(root, text='Left', command=lambda: send_message(pan_left)).grid(row=2, column=2)
 Button(root, text='Right', command=lambda: send_message(pan_right)).grid(row=2, column=4)
