@@ -135,6 +135,6 @@ Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=1,
 Button(root, text='Info Off', command=lambda: send_message(information_display_off)).grid(row=2, column=6)
 
 # IP Label
-Label(root, text=ip).grid(row=6, column=0, columnspan=2)
+Label(root, text=ip+' '+port).grid(row=6, column=0, columnspan=2)
 
 root.mainloop()
