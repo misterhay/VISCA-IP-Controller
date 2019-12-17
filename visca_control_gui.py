@@ -108,13 +108,15 @@ print('Resetting sequence number to', reset_sequence_number())
 from tkinter import *
 root = Tk()
 root.title('VISCA IP Camera Controller')
-Label(root, text='VISCA IP Camera Controller').grid(row=0, columnspan=100)
-Button(root, text=1, command=lambda: memory_recall_function(0)).grid(row=1, column=0)
-Button(root, text=2, command=lambda: memory_recall_function(1)).grid(row=1, column=1)
-Button(root, text=3, command=lambda: memory_recall_function(2)).grid(row=2, column=0)
-Button(root, text=4, command=lambda: memory_recall_function(3)).grid(row=2, column=1)
-Button(root, text=5, command=lambda: memory_recall_function(4)).grid(row=3, column=0)
-Button(root, text=6, command=lambda: memory_recall_function(5)).grid(row=3, column=1)
+Label(root, text='VISCA IP Camera Controller').grid(row=0, column=0, columnspan=100)
+Label(root, text='Presets').grid(row=1, column=0, columnspan=2)
+
+Button(root, text=1, command=lambda: memory_recall_function(0)).grid(row=2, column=0)
+Button(root, text=2, command=lambda: memory_recall_function(1)).grid(row=2, column=1)
+Button(root, text=3, command=lambda: memory_recall_function(2)).grid(row=3, column=0)
+Button(root, text=4, command=lambda: memory_recall_function(3)).grid(row=3, column=1)
+Button(root, text=5, command=lambda: memory_recall_function(4)).grid(row=4, column=0)
+Button(root, text=6, command=lambda: memory_recall_function(5)).grid(row=4, column=1)
 
 Button(root, text='Home', command=lambda: send_message(pan_home)).grid(row=2, column=3)
 Button(root, text='Up', command=lambda: send_message(pan_up)).grid(row=1, column=3)
@@ -128,12 +130,16 @@ Button(root, text='DownRight', command=lambda: send_message(pan_down_right)).gri
 
 # slider to set speed for pan_speed and tilt_speed (0x01 to 0x17)
 
-Button(root, text='Focus Far', command=lambda: send_message(focus_far)).grid(row=1, column=5)
-Button(root, text='Zoom In', command=lambda: send_message(zoom_tele)).grid(row=2, column=5)
-Button(root, text='Zoom Out', command=lambda: send_message(zoom_wide)).grid(row=3, column=5)
-Button(root, text='Zoom Stop', command=lambda: send_message(zoom_stop)).grid(row=3, column=6)
 Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=1, column=6)
-Button(root, text='Info Off', command=lambda: send_message(information_display_off)).grid(row=2, column=6)
+
+Button(root, text='Zoom In', command=lambda: send_message(zoom_tele)).grid(row=1, column=5)
+Button(root, text='Zoom Out', command=lambda: send_message(zoom_wide)).grid(row=2, column=5)
+Button(root, text='Zoom Stop', command=lambda: send_message(zoom_stop)).grid(row=3, column=5)
+
+Button(root, text='Focus Near', command=lambda: send_message(focus_near)).grid(row=2, column=6)
+Button(root, text='Focus Far', command=lambda: send_message(focus_far)).grid(row=3, column=6)
+
+Button(root, text='Info Off', command=lambda: send_message(information_display_off)).grid(row=6, column=6)
 
 # IP Label
 Label(root, text=ip+' '+str(port)).grid(row=6, column=0, columnspan=2)
