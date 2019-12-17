@@ -4,11 +4,10 @@
 import socket
 import binascii # for printing the messages we send, not really necessary
 
-ip = '192.168.0.100'
+#ip = '192.168.0.100'
+ip = '127.0.0.1'
 port = 52381
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
-
-buffer_size = 1024
 
 sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
 reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
@@ -37,6 +36,7 @@ memory_recall = '81 01 04 3F 02 0p FF' # p: Memory number (=0 to F)
 # WW: Tilt speed setting 0x01 (low speed) to 0x17
 pan_speed = '05'
 tilt_speed = '05'
+speed = 5
 # YYYY: Pan Position DE00 to 2200 (CENTER 0000)
 # ZZZZ: Tilt Position FC00 to 1200 (CENTER 0000)
 YYYY = '0000'
@@ -129,6 +129,7 @@ Button(root, text='DownLeft', command=lambda: send_message(pan_down_left)).grid(
 Button(root, text='DownRight', command=lambda: send_message(pan_down_right)).grid(row=3, column=4)
 
 # slider to set speed for pan_speed and tilt_speed (0x01 to 0x17)
+speed_slider = Scale(root, from_=0, to=17, variable=speed, orient=HORIZONTAL, label='Speed').grid(row=4, column=2, columnspan=3)
 
 Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=1, column=6)
 
@@ -145,10 +146,3 @@ Button(root, text='Info Off', command=lambda: send_message(information_display_o
 Label(root, text=ip+' '+str(port)).grid(row=6, column=0, columnspan=2)
 
 root.mainloop()
-
-# start socket_receive
-s.bind(('', port))
-
-while True:
-    data = s.recvfrom(buffer_size)
-    print(data)
