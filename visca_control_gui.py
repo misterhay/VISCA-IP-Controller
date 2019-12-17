@@ -129,7 +129,7 @@ Button(root, text='DownLeft', command=lambda: send_message(pan_down_left)).grid(
 Button(root, text='DownRight', command=lambda: send_message(pan_down_right)).grid(row=3, column=4)
 
 # slider to set speed for pan_speed and tilt_speed (0x01 to 0x17)
-speed_slider = Scale(root, from_=0, to=17, variable=speed, orient=HORIZONTAL, label='Speed').grid(row=4, column=2, columnspan=3)
+speed_slider = Scale(root, from_=0, to=17, variable=speed, orient=HORIZONTAL, label='Speed').grid(row=5, column=2, columnspan=3)
 
 Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=1, column=6)
 
