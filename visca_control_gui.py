@@ -4,8 +4,8 @@
 import socket
 import binascii # for printing the messages we send, not really necessary
 
-#ip = '192.168.0.100'
-ip = '127.0.0.1'
+ip = '192.168.0.100'
+#ip = '127.0.0.1'
 port = 52381
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
 
