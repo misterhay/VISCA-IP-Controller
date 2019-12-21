@@ -112,7 +112,7 @@ Label(root, text='VISCA IP Camera Controller').grid(row=0, column=0, columnspan=
 Label(root, text='Presets').grid(row=1, column=0, columnspan=2)
 
 Button(root, text=1, command=lambda: memory_recall_function(0)).grid(row=2, column=0)
-Button(root, text=2, command=lambda: memory_recall_function(1)).grid(row=2, column=1)
+Button(root, text=2, command=lambda: memory_recall_function(1)).grid(row=2, column=1, padx=5)
 Button(root, text=3, command=lambda: memory_recall_function(2)).grid(row=3, column=0)
 Button(root, text=4, command=lambda: memory_recall_function(3)).grid(row=3, column=1)
 Button(root, text=5, command=lambda: memory_recall_function(4)).grid(row=4, column=0)
@@ -135,8 +135,8 @@ speed_slider = Scale(root, from_=0, to=17, variable=speed, orient=HORIZONTAL, la
 Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=1, column=6)
 
 Button(root, text='Zoom In', command=lambda: send_message(zoom_tele)).grid(row=1, column=5)
-Button(root, text='Zoom Out', command=lambda: send_message(zoom_wide)).grid(row=2, column=5)
-Button(root, text='Zoom Stop', command=lambda: send_message(zoom_stop)).grid(row=3, column=5)
+Button(root, text='Zoom Out', command=lambda: send_message(zoom_wide)).grid(row=3, column=5)
+Button(root, text='Zoom Stop', command=lambda: send_message(zoom_stop)).grid(row=2, column=5)
 
 Button(root, text='Focus Near', command=lambda: send_message(focus_near)).grid(row=2, column=6)
 Button(root, text='Focus Far', command=lambda: send_message(focus_far)).grid(row=3, column=6)
@@ -144,6 +144,6 @@ Button(root, text='Focus Far', command=lambda: send_message(focus_far)).grid(row
 Button(root, text='Info Off', command=lambda: send_message(information_display_off)).grid(row=6, column=6)
 
 # IP Label
-Label(root, text=ip+' '+str(port)).grid(row=6, column=0, columnspan=2)
+Label(root, text=ip+':'+str(port)).grid(row=6, column=0, columnspan=3)
 
 root.mainloop()
