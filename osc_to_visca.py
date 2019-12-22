@@ -62,12 +62,13 @@ def parse_osc_message(osc_address, osc_path, args):
     osc_argument = args[0]
     if osc_command == 'camera_on':
         if osc_argument > 0:
-            #print(osc_command)
             send_message(camera_on)
-    if osc_command == 'pan_tilt_speed':
+    elif osc_command == 'pan_tilt_speed':
         global pan_speed
         pan_speed = floor(osc_argument)
         sendOSC('pan_tilt_speed_label', pan_speed)
+    else:
+        print(osc_command, osc_argument)
 
 
 def protocol_factory():
