@@ -5,22 +5,22 @@
 # https://github.com/artfwo/aiosc
 import asyncio
 import aiosc
-from math import floor
+from math import floor  # for fader
 import socket
-import binascii  # for printing the messages we send, not really necessary
+import binascii  # for printing the messages we send
 
-# VISCA sender (socket)
+### VISCA sender (socket)
 camera_ip = '192.168.0.100'
-#ip = '127.0.0.1'
 camera_port = 52381
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
 
 
-# VISCA Commands
+### VISCA Commands
 sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
 
 
 camera_on = '81 01 04 00 02 FF'
+memory_recall = '81 01 04 3F 02 0p FF' # p: Memory number (=0 to F)
 
 def reset_sequence_number():
     reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
@@ -42,17 +42,17 @@ def send_message(message_string):
     return visca_message
 
 
-# OSC sender
+### OSC sender
 touchOSC_ip = '10.0.0.32'
 touchOSC_port = 9000
 
 def sendOSC(osc_command, osc_argument):
-    print('this is not working...')
-    #print(pan_speed)
+    #print('this is not working...')
+    print(pan_speed)
     #send_loop = asyncio.get_event_loop()
     #send_loop.run_until_complete(aiosc.send((touchOSC_ip, touchOSC_port), '/1/'+osc_command, osc_argument))
 
-# OSC receiving server
+### OSC receiving server
 
 def parse_osc_message(osc_address, osc_path, args):
     global touchOSC_ip
@@ -63,6 +63,11 @@ def parse_osc_message(osc_address, osc_path, args):
     if osc_command == 'camera_on':
         if osc_argument > 0:
             send_message(camera_on)
+    elif 'memory_' in osc_command:
+        memory_preset_number = osc_command[-1]
+        if osc_argument > 0:
+            if 'recall' in osc_command:
+                send_message(memory_recall.replace('p', memory_preset_number))
     elif osc_command == 'pan_tilt_speed':
         global pan_speed
         pan_speed = floor(osc_argument)
