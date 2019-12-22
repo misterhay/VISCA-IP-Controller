@@ -57,7 +57,7 @@ def reset_sequence_number():
 reset_sequence_number()
 sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
 
-def send_message(message_string):
+def send_visca(message_string):
     global sequence_number
     payload_type = bytearray.fromhex('01 00')
     payload = bytearray.fromhex(message_string)
@@ -74,8 +74,8 @@ touchOSC_ip = '10.0.0.32'
 touchOSC_port = 9000
 
 def sendOSC(osc_command, osc_argument):
-    #print('this is not working...')
-    print(pan_speed)
+    print('this is not working...')
+    #print(pan_speed)
     #send_loop = asyncio.get_event_loop()
     #send_loop.run_until_complete(aiosc.send((touchOSC_ip, touchOSC_port), '/1/'+osc_command, osc_argument))
 
@@ -90,14 +90,14 @@ def parse_osc_message(osc_address, osc_path, args):
     osc_argument = args[0]
     if osc_command == 'camera_on':
         if osc_argument > 0:
-            send_message(camera_on)
+            send_visca(camera_on)
     elif 'memory_' in osc_command:
         memory_preset_number = osc_command[-1]
         if osc_argument > 0:
             if 'recall' in osc_command:
-                send_message(information_display_off)
+                send_visca(information_display_off)
                 #wait for acknowledgement
-                send_message(memory_recall.replace('p', memory_preset_number))
+                send_visca(memory_recall.replace('p', memory_preset_number))
     elif osc_command == 'pan_tilt_speed':
         global pan_speed
         pan_speed = floor(osc_argument)
