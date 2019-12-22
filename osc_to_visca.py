@@ -15,12 +15,37 @@ camera_port = 52381
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
 
 
-### VISCA Commands
-sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
-
-
+### VISCA Commands (Payloads)
 camera_on = '81 01 04 00 02 FF'
+information_display_off = '81 01 7E 01 18 03 FF'
 memory_recall = '81 01 04 3F 02 0p FF' # p: Memory number (=0 to F)
+memory_set = '81 01 04 3F 01 0p FF' # p: Memory number (=0 to F)
+pan_up = '81 01 06 01 VV WW 03 01 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
+pan_down = '81 01 06 01 VV WW 03 02 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
+pan_left = '81 01 06 01 VV WW 01 03 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
+pan_right = '81 01 06 01 VV WW 02 03 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
+pan_up_left = '81 01 06 01 VV WW 01 01 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
+pan_up_right = '81 01 06 01 VV WW 02 01 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
+pan_down_left = '81 01 06 01 VV WW 01 02 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
+pan_down_right = '81 01 06 01 VV WW 02 02 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
+pan_stop = '81 01 06 01 VV WW 03 03 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
+pan_home = '81 01 06 04 FF'
+pan_reset = '81 01 06 05 FF'
+focus_stop = '81 01 04 08 00 FF'
+focus_far = '81 01 04 08 02 FF'
+focus_near = '81 01 04 08 03 FF'
+focus_far_variable = '81 01 04 08 2p FF'.replace('p', '7') # 0 low to 7 high
+focus_near_variable = '81 01 04 08 3p FF'.replace('p', '7') # 0 low to 7 high
+focus_direct = '81 01 04 48 0p 0q 0r 0s FF' #.replace('p', ) q, r, s
+focus_auto = '81 01 04 38 02 FF'
+focus_manual = '81 01 04 38 03 FF'
+focus_infinity = '81 01 04 18 02 FF'
+zoom_stop = '81 01 04 07 00 FF'
+zoom_tele = '81 01 04 07 02 FF'
+zoom_wide = '81 01 04 07 03 FF'
+zoom_tele_variable = '81 01 04 07 2p FF' # p=0 (Low) to 7 (High)
+zoom_wide_variable = '81 01 04 07 3p FF' # p=0 (Low) to 7 (High)
+zoom_direct = '81 01 04 47 0p 0q 0r 0s FF' # pqrs: Zoom Position
 
 def reset_sequence_number():
     reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
@@ -28,7 +53,9 @@ def reset_sequence_number():
     sequence_number = 1
     return sequence_number
 
+## Start off by resetting sequence number
 reset_sequence_number()
+sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
 
 def send_message(message_string):
     global sequence_number
@@ -54,6 +81,7 @@ def sendOSC(osc_command, osc_argument):
 
 ### OSC receiving server
 
+#consider using eval() to run functions from osc_path statements
 def parse_osc_message(osc_address, osc_path, args):
     global touchOSC_ip
     touchOSC_ip = osc_address[0]
@@ -67,6 +95,8 @@ def parse_osc_message(osc_address, osc_path, args):
         memory_preset_number = osc_command[-1]
         if osc_argument > 0:
             if 'recall' in osc_command:
+                send_message(information_display_off)
+                #wait for acknowledgement
                 send_message(memory_recall.replace('p', memory_preset_number))
     elif osc_command == 'pan_tilt_speed':
         global pan_speed

@@ -7,12 +7,15 @@ import aiosc
 
 
 #''' sending works
-address = "10.0.0.30"
-port = 9000
+touchOSC_ip = '10.0.0.30'
+touchOSC_port = 9000
+osc_command = 'pan_tilt_speed_label'
+osc_argument = 5
 
 loop = asyncio.get_event_loop()
-#loop.run_until_complete(aiosc.send((address, port), '/1/fader1', 5))
-loop.run_until_complete(aiosc.send((address, port), '/1/CameraResponse', ''))
+#loop.run_until_complete(aiosc.send((touchOSC_ip, touchOSC_port), '/1/pan_tilt_speed', 5))
+#loop.run_until_complete(aiosc.send((touchOSC_ip, touchOSC_port), '/1/CameraResponse', ''))
+loop.run_until_complete(aiosc.send((touchOSC_ip, touchOSC_port), '/1/'+osc_command, osc_argument))
 #'''
 
 ''' server works
