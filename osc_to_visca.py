@@ -20,6 +20,8 @@ camera_on = '81 01 04 00 02 FF'
 information_display_off = '81 01 7E 01 18 03 FF'
 memory_recall = '81 01 04 3F 02 0p FF' # p: Memory number (=0 to F)
 memory_set = '81 01 04 3F 01 0p FF' # p: Memory number (=0 to F)
+pan_speed = 5
+tilt_speed = 5
 pan_up = '81 01 06 01 VV WW 03 01 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
 pan_down = '81 01 06 01 VV WW 03 02 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
 pan_left = '81 01 06 01 VV WW 01 03 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
