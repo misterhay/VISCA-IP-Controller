@@ -66,6 +66,9 @@ def send_visca(message_string):
     s.sendto(visca_message, (camera_ip, camera_port))
     print(binascii.hexlify(visca_message), camera_ip, camera_port, sequence_number)
     sequence_number += 1
+    # wait for acknowledge and completion messages...
+    # acknowledge = 90 4Y FF  # Y = socket number
+    # completion = 90 5Y FF  (or 90 5Y ... FF for inquiry commands)
     return visca_message
 
 
