@@ -14,13 +14,16 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(aiosc.send((address, port), '/1/fader1', 5))
 '''
 
-def print_message(osc):
-    aiosc.OSCProtocol({})
+def print_message(addr, path, args):
+    if args[0] == 1.0:
+        print(path)
+    #print(args[0])
 
 
 # OSC receiving server
 def protocol_factory():
-    osc = aiosc.OSCProtocol({'//*': lambda addr, path, *args: print(addr, path, args)})
+    #osc = aiosc.OSCProtocol({'//*': lambda addr, path, *args: print(addr, path, args)})
+    osc = aiosc.OSCProtocol({'//*': lambda addr, path, *args: print_message(addr, path, args)})
     return osc
 
 loop = asyncio.get_event_loop()
