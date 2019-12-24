@@ -3,8 +3,11 @@
 # pip3 install aiosc
 # https://pypi.org/project/aiosc/
 # https://github.com/artfwo/aiosc
-import asyncio
-import aiosc
+import asyncio # for receiving OSC
+import aiosc # for receiving OSC
+# pip3 install python-osc
+# https://pypi.org/project/python-osc/
+from pythonosc import udp_client # for sending OSC
 from math import floor  # for fader
 import socket
 import binascii  # for printing the messages we send
@@ -67,7 +70,7 @@ zoom_tele_variable = '81 01 04 07 2p FF' # p=0 (Low) to 7 (High)
 zoom_wide_variable = '81 01 04 07 3p FF' # p=0 (Low) to 7 (High)
 zoom_direct = '81 01 04 47 0p 0q 0r 0s FF' # pqrs: Zoom Position
 
-def reset_sequence_number():
+def reset_sequence_number_function():
     reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
     s.sendto(reset_sequence_number_message,(camera_ip, camera_port))
     global sequence_number
@@ -83,12 +86,8 @@ def reset_sequence_number():
     except socket.timeout: # s.settimeout(2.0) #above
         received_message = 'No response from camera'
         print(received_message)
+        send_osc('reset_sequence_number', 0.0)
     return sequence_number
-
-## Start off by resetting sequence number
-sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
-reset_sequence_number()
-
 
 def send_visca(message_string):
     global sequence_number
@@ -114,25 +113,22 @@ def send_visca(message_string):
     except socket.timeout: # s.settimeout(2.0) #from above
         received_message = 'No response from camera'
         print(received_message)
+        send_osc('reset_sequence_number', 0.0)
     #return visca_message
     return received_message
-
 
 ### OSC server and client
 osc_receive_port = 8000
 touchOSC_ip = '10.0.0.32' # there must be a way to listen for this... maybe osc_address[0]
 osc_send_port = 9000
 
-
-def send_osc(osc_command, osc_argument):
-    print('this is not working...')
-    #print(pan_speed)
-    #send_loop = asyncio.get_event_loop()
-    #send_loop.run_until_complete(aiosc.send((touchOSC_ip, osc_send_port), '/1/'+osc_command, osc_argument))
+def send_osc(osc_command, osc_send_argument):
+    osc_message_to_send = '/1/' + osc_command
+    osc_client = udp_client.SimpleUDPClient(touchOSC_ip, osc_send_port)
+    osc_client.send_message(osc_message_to_send, osc_send_argument)
 
 ### OSC receiving server
 
-#consider using eval() to run functions from osc_path statements
 def parse_osc_message(osc_address, osc_path, args):
     global touchOSC_ip
     touchOSC_ip = osc_address[0]
@@ -170,7 +166,8 @@ def parse_osc_message(osc_address, osc_path, args):
         else:
             send_visca(focus_stop)
     elif osc_command == 'reset_sequence_number':
-        reset_sequence_number()
+        reset_sequence_number_function()
+        send_osc(osc_command, 1.0)
     elif 'pan' in osc_command:
         if 'speed' not in osc_command:
             if osc_argument > 0:
@@ -188,6 +185,10 @@ def parse_osc_message(osc_address, osc_path, args):
         print("I don't know what to do with", osc_command, osc_argument)
 
 
+## Start off by resetting sequence number
+sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
+reset_sequence_number_function()
+
 def protocol_factory():
     osc = aiosc.OSCProtocol({'//*': lambda osc_address, osc_path, *args: parse_osc_message(osc_address, osc_path, args)})
     return osc
@@ -195,6 +196,3 @@ receive_loop = asyncio.get_event_loop()
 coro = receive_loop.create_datagram_endpoint(protocol_factory, local_addr=('0.0.0.0', osc_receive_port))
 transport, protocol = receive_loop.run_until_complete(coro)
 receive_loop.run_forever()
-
-
-
