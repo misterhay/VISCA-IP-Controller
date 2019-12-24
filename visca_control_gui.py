@@ -11,6 +11,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
 # for receiving
 buffer_size = 1024
 s.bind(('', camera_port+1)) # use the port one higher than the camera's port
+s.settimeout(2.0) # only wait for a response for 2 seconds
 
 
 # Payloads
@@ -94,12 +95,18 @@ def send_message(message_string):
         sequence_number += 1
     s.sendto(message, (camera_ip, camera_port))
     print(binascii.hexlify(message), 'sent to', camera_ip, camera_port, sequence_number)
-    data = s.recvfrom(buffer_size)
-    received_message = binascii.hexlify(data[0])
-    print('Received', received_message)
-    data = s.recvfrom(buffer_size)
-    received_message = binascii.hexlify(data[0])
-    print('Received', received_message)
+    # add a timeout in case we don't hear back
+    try:
+        data = s.recvfrom(buffer_size)
+        received_message = binascii.hexlify(data[0])
+        print('Received', received_message)
+        data = s.recvfrom(buffer_size)
+        received_message = binascii.hexlify(data[0])
+        print('Received', received_message)
+    except socket.timeout: # s.settimeout(2.0) #above
+        received_message = 'No response from camera'
+        print(received_message)
+
     if received_message == b'9051ff':
         display_message.set('Connected')
     else:
