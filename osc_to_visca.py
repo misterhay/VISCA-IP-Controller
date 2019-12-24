@@ -118,12 +118,14 @@ def parse_osc_message(osc_address, osc_path, args):
             if 'recall' in osc_command:
                 print('Memory recall', memory_preset_number)
                 send_visca(information_display_off)
-                #wait for acknowledgement
                 send_visca(memory_recall.replace('p', memory_preset_number))
-    elif osc_command == 'pan_tilt_speed':
-        global pan_speed
-        pan_speed = floor(osc_argument)
-        send_osc('pan_tilt_speed_label', pan_speed)
+            elif 'set' in osc_command:
+                print('Memory set', memory_preset_number)
+                send_visca(memory_set.replace('p', memory_preset_number))
+    #elif osc_command == 'pan_tilt_speed':
+    #    global pan_speed
+    #    pan_speed = floor(osc_argument)
+    #    send_osc('pan_tilt_speed_label', pan_speed)
     else:
         print(osc_command, osc_argument)
 
