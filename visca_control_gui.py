@@ -13,10 +13,10 @@ buffer_size = 1024
 s.bind(('', camera_port+1)) # use the port one higher than the camera's port
 
 
-sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
-reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
-
 # Payloads
+
+sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
+reset_sequence_number = '02 00 00 01 00 00 00 01 01'
 
 camera_on = '81 01 04 00 02 FF'
 camera_off = '81 01 04 00 03 FF'
@@ -96,10 +96,13 @@ def send_message(message_string):
     data = s.recvfrom(buffer_size)
     received_message = binascii.hexlify(data[0])
     print('Received', received_message)
-    display_message.set(received_message)
+    if received_message == b'9051ff':
+        display_message.set('Connected')
+    else:
+        display_message.set(received_message)
     return received_message
 
-def reset_sequence_number():
+def reset_sequence_number_function():
     reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
     s.sendto(reset_sequence_number_message,(camera_ip, camera_port))
     sequence_number = 1
@@ -113,16 +116,17 @@ def store_network_values(ip_value, port_value):
     print(camera_ip, camera_port)
     return camera_ip, camera_port
 
-print('Resetting sequence number to', reset_sequence_number())
-
 # GUI
 from tkinter import *
 root = Tk()
 display_message = StringVar()
 root.title('VISCA IP Camera Controller')
 Label(root, text='VISCA IP Camera Controller').grid(row=0, column=0, columnspan=100)
-Label(root, text='Presets').grid(row=1, column=0, columnspan=2)
 
+Button(root, text='Connect', command=lambda: send_message(reset_sequence_number)).grid(row=1, column=6)
+Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=2, column=6)
+
+Label(root, text='Presets').grid(row=1, column=0, columnspan=2)
 Button(root, text=1, command=lambda: memory_recall_function(0)).grid(row=2, column=0)
 Button(root, text=2, command=lambda: memory_recall_function(1)).grid(row=2, column=1, padx=5)
 Button(root, text=3, command=lambda: memory_recall_function(2)).grid(row=3, column=0)
@@ -144,14 +148,12 @@ Button(root, text='Home', command=lambda: send_message(pan_home)).grid(row=4, co
 # slider to set speed for pan_speed and tilt_speed (0x01 to 0x17)
 Scale(root, from_=0, to=17, variable=speed, orient=HORIZONTAL, label='Speed').grid(row=5, column=2, columnspan=3)
 
-Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=1, column=6)
-
 Button(root, text='Zoom In', command=lambda: send_message(zoom_tele)).grid(row=1, column=5)
-Button(root, text='Zoom Out', command=lambda: send_message(zoom_wide)).grid(row=3, column=5)
 Button(root, text='Zoom Stop', command=lambda: send_message(zoom_stop)).grid(row=2, column=5)
+Button(root, text='Zoom Out', command=lambda: send_message(zoom_wide)).grid(row=3, column=5)
 
-Button(root, text='Focus Near', command=lambda: send_message(focus_near)).grid(row=2, column=6)
-Button(root, text='Focus Far', command=lambda: send_message(focus_far)).grid(row=3, column=6)
+Button(root, text='Focus Near', command=lambda: send_message(focus_near)).grid(row=4, column=5)
+Button(root, text='Focus Far', command=lambda: send_message(focus_far)).grid(row=5, column=5)
 
 Button(root, text='Info Off', command=lambda: send_message(information_display_off)).grid(row=5, column=6)
 
