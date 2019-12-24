@@ -25,8 +25,9 @@ camera_on = '81 01 04 00 02 FF'
 information_display_off = '81 01 7E 01 18 03 FF'
 memory_recall = '81 01 04 3F 02 0p FF' # p: Memory number (=0 to F)
 memory_set = '81 01 04 3F 01 0p FF' # p: Memory number (=0 to F)
-pan_speed = 5
-tilt_speed = 5
+'''
+pan_speed = '05'
+tilt_speed = '05'
 pan_up = '81 01 06 01 VV WW 03 01 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
 pan_down = '81 01 06 01 VV WW 03 02 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
 pan_left = '81 01 06 01 VV WW 01 03 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
@@ -36,6 +37,18 @@ pan_up_right = '81 01 06 01 VV WW 02 01 FF'.replace('VV', str(pan_speed)).replac
 pan_down_left = '81 01 06 01 VV WW 01 02 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
 pan_down_right = '81 01 06 01 VV WW 02 02 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
 pan_stop = '81 01 06 01 VV WW 03 03 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
+'''
+pan_dictionary = {
+    'pan_up' : '81 01 06 01 VV WW 03 01 FF',
+    'pan_down' : '81 01 06 01 VV WW 03 02 FF',
+    'pan_left' : '81 01 06 01 VV WW 01 03 FF',
+    'pan_right' : '81 01 06 01 VV WW 02 03 FF',
+    'pan_up_left' : '81 01 06 01 VV WW 01 01 FF',
+    'pan_up_right' : '81 01 06 01 VV WW 02 01 FF',
+    'pan_down_left' : '81 01 06 01 VV WW 01 02 FF',
+    'pan_down_right' : '81 01 06 01 VV WW 02 02 FF'}
+
+pan_stop = '81 01 06 01 15 15 03 03 FF' # replaced VV and WW with 15
 pan_home = '81 01 06 04 FF'
 pan_reset = '81 01 06 05 FF'
 focus_stop = '81 01 04 08 00 FF'
@@ -59,22 +72,23 @@ def reset_sequence_number():
     s.sendto(reset_sequence_number_message,(camera_ip, camera_port))
     global sequence_number
     sequence_number = 1
-    print('Reset sequence number')
+    print('Reset sequence number to', sequence_number)
     try:
         data = s.recvfrom(buffer_size)
         received_message = binascii.hexlify(data[0])
-        print('Received', received_message)
+        #print('Received', received_message)
         data = s.recvfrom(buffer_size)
         received_message = binascii.hexlify(data[0])
-        print('Received', received_message)
+        #print('Received', received_message)
     except socket.timeout: # s.settimeout(2.0) #above
         received_message = 'No response from camera'
         print(received_message)
     return sequence_number
 
 ## Start off by resetting sequence number
-reset_sequence_number()
 sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
+reset_sequence_number()
+
 
 def send_visca(message_string):
     global sequence_number
@@ -89,10 +103,14 @@ def send_visca(message_string):
     try:
         data = s.recvfrom(buffer_size)
         received_message = binascii.hexlify(data[0])
-        print('Received', received_message)
+        #print('Received', received_message)
         data = s.recvfrom(buffer_size)
         received_message = binascii.hexlify(data[0])
-        print('Received', received_message)
+        if received_message == b'9051ff':
+            print('Received okay')
+        else:
+            print('Error')
+        #print('Received', received_message)
     except socket.timeout: # s.settimeout(2.0) #from above
         received_message = 'No response from camera'
         print(received_message)
@@ -102,7 +120,7 @@ def send_visca(message_string):
 
 ### OSC server and client
 osc_receive_port = 8000
-touchOSC_ip = '10.0.0.32' # there must be a way to listen for this... osc_address[0]
+touchOSC_ip = '10.0.0.32' # there must be a way to listen for this... maybe osc_address[0]
 osc_send_port = 9000
 
 
@@ -153,12 +171,21 @@ def parse_osc_message(osc_address, osc_path, args):
             send_visca(focus_stop)
     elif osc_command == 'reset_sequence_number':
         reset_sequence_number()
+    elif 'pan' in osc_command:
+        if 'speed' not in osc_command:
+            if osc_argument > 0:
+                pan_command = pan_dictionary[osc_command].replace('VV', '05').replace('WW', '05')
+                send_visca(pan_command)
+            else:
+                send_visca(pan_stop)
+        else:
+            print("I can't yet set pan_tilt_speed")
     #elif osc_command == 'pan_tilt_speed':
     #    global pan_speed
     #    pan_speed = floor(osc_argument)
     #    send_osc('pan_tilt_speed_label', pan_speed)
     else:
-        print(osc_command, osc_argument)
+        print("I don't know what to do with", osc_command, osc_argument)
 
 
 def protocol_factory():
