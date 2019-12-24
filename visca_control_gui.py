@@ -102,13 +102,13 @@ def send_message(message_string):
         display_message.set(received_message)
     return received_message
 
-def reset_sequence_number_function():
+def reset_sequence_number_function(): # we don't really need this anymore
     reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
     s.sendto(reset_sequence_number_message,(camera_ip, camera_port))
     sequence_number = 1
     return sequence_number
 
-def store_network_values(ip_value, port_value):
+def store_network_values(ip_value, port_value): # we don't really need this anymore
     global camera_ip
     global camera_port
     camera_ip = ip_value
@@ -159,7 +159,7 @@ Button(root, text='Info Off', command=lambda: send_message(information_display_o
 
 # IP Label
 Label(root, text=camera_ip+':'+str(camera_port)).grid(row=6, column=0, columnspan=3)
-# Message Label
+# Connection Label
 Label(root, textvariable=display_message).grid(row=6, column=4, columnspan=3)
 
 root.mainloop()
