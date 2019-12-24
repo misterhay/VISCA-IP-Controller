@@ -88,7 +88,10 @@ def send_message(message_string):
     payload = bytearray.fromhex(message_string)
     payload_length = len(payload).to_bytes(2, 'big')
     message = payload_type + payload_length + sequence_number.to_bytes(4, 'big') + payload
-    sequence_number += 1
+    if message_string == reset_sequence_number:
+        sequence_number = 1
+    else:
+        sequence_number += 1
     s.sendto(message, (camera_ip, camera_port))
     print(binascii.hexlify(message), 'sent to', camera_ip, camera_port, sequence_number)
     data = s.recvfrom(buffer_size)
