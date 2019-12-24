@@ -57,8 +57,19 @@ zoom_direct = '81 01 04 47 0p 0q 0r 0s FF' # pqrs: Zoom Position
 def reset_sequence_number():
     reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
     s.sendto(reset_sequence_number_message,(camera_ip, camera_port))
+    global sequence_number
     sequence_number = 1
     print('Reset sequence number')
+    try:
+        data = s.recvfrom(buffer_size)
+        received_message = binascii.hexlify(data[0])
+        print('Received', received_message)
+        data = s.recvfrom(buffer_size)
+        received_message = binascii.hexlify(data[0])
+        print('Received', received_message)
+    except socket.timeout: # s.settimeout(2.0) #above
+        received_message = 'No response from camera'
+        print(received_message)
     return sequence_number
 
 ## Start off by resetting sequence number
@@ -122,6 +133,26 @@ def parse_osc_message(osc_address, osc_path, args):
             elif 'set' in osc_command:
                 print('Memory set', memory_preset_number)
                 send_visca(memory_set.replace('p', memory_preset_number))
+    elif 'zoom' in osc_command:
+        if osc_argument > 0:
+            if osc_command == 'zoom_tele':
+                send_visca(zoom_tele)
+            elif osc_command == 'zoom_wide':
+                send_visca(zoom_wide)
+        else:
+            send_visca(zoom_stop)
+    elif 'focus' in osc_command:
+        if osc_command == 'focus_auto':
+            send_visca(focus_auto)
+        if osc_argument > 0:
+            if osc_command == 'focus_far':
+                send_visca(focus_far)
+            elif osc_command == 'focus_near':
+                send_visca(focus_near)
+        else:
+            send_visca(focus_stop)
+    elif osc_command == 'reset_sequence_number':
+        reset_sequence_number()
     #elif osc_command == 'pan_tilt_speed':
     #    global pan_speed
     #    pan_speed = floor(osc_argument)
