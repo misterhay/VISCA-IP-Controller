@@ -72,6 +72,7 @@ focus_infinity = '81 01 04 18 02 FF'
 
 def memory_recall_function(memory_number):
     message_string = memory_recall.replace('p', str(memory_number))
+    send_message(information_display_off) # otherwise we see a message on the camera output
     message = send_message(message_string)
     return message
 
