@@ -18,6 +18,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
 ### VISCA receiver
 buffer_size = 1024
 s.bind(('', camera_port+1)) # use the port one higher than the camera's port
+s.settimeout(2.0) # only wait for a response for 2 seconds
 
 ### VISCA Commands (Payloads)
 camera_on = '81 01 04 00 02 FF'
@@ -73,14 +74,19 @@ def send_visca(message_string):
     s.sendto(visca_message, (camera_ip, camera_port))
     print(binascii.hexlify(visca_message), 'sent to', camera_ip, camera_port, sequence_number)
     sequence_number += 1
-    # wait for acknowledge and completion messages...
-    data = s.recvfrom(buffer_size)
-    received_message = binascii.hexlify(data[0])
-    print('Received', received_message)
-    data = s.recvfrom(buffer_size)
-    received_message = binascii.hexlify(data[0])
-    print('Received', received_message)
-    return visca_message
+    # wait for acknowledge and completion messages
+    try:
+        data = s.recvfrom(buffer_size)
+        received_message = binascii.hexlify(data[0])
+        print('Received', received_message)
+        data = s.recvfrom(buffer_size)
+        received_message = binascii.hexlify(data[0])
+        print('Received', received_message)
+    except socket.timeout: # s.settimeout(2.0) #from above
+        received_message = 'No response from camera'
+        print(received_message)
+    #return visca_message
+    return received_message
 
 
 ### OSC server and client
