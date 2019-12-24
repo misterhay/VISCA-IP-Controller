@@ -4,15 +4,19 @@
 import socket
 import binascii # for printing the messages we send, not really necessary
 
-ip = '192.168.0.100'
-#ip = '127.0.0.1'
-port = 52381
+#camera_ip = '192.168.0.100'
+camera_ip = '127.0.0.1'
+camera_port = 52381
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
+# for receiving
+buffer_size = 1024
+s.bind(('', camera_port+1)) # use the port one higher than the camera's port
+
 
 sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
 reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
 
-# payloads
+# Payloads
 
 camera_on = '81 01 04 00 02 FF'
 camera_off = '81 01 04 00 03 FF'
@@ -78,35 +82,43 @@ def memory_set_function(memory_number):
 
 def send_message(message_string):
     global sequence_number
+    global received_message
     payload_type = bytearray.fromhex('01 00')
     payload = bytearray.fromhex(message_string)
     payload_length = len(payload).to_bytes(2, 'big')
     message = payload_type + payload_length + sequence_number.to_bytes(4, 'big') + payload
-    #s.sendto(reset_sequence_number_message,(ip, port))
-    s.sendto(message, (ip, port))
-    print(binascii.hexlify(message), ip, port, sequence_number)
     sequence_number += 1
-    return message
+    s.sendto(message, (camera_ip, camera_port))
+    print(binascii.hexlify(message), 'sent to', camera_ip, camera_port, sequence_number)
+    data = s.recvfrom(buffer_size)
+    received_message = binascii.hexlify(data[0])
+    print('Received', received_message)
+    data = s.recvfrom(buffer_size)
+    received_message = binascii.hexlify(data[0])
+    print('Received', received_message)
+    display_message.set(received_message)
+    return received_message
 
 def reset_sequence_number():
     reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
-    s.sendto(reset_sequence_number_message,(ip, port))
+    s.sendto(reset_sequence_number_message,(camera_ip, camera_port))
     sequence_number = 1
     return sequence_number
 
 def store_network_values(ip_value, port_value):
-    global ip
-    global port
-    ip = ip_value
-    port = port_value
-    print(ip, port)
-    return ip, port
+    global camera_ip
+    global camera_port
+    camera_ip = ip_value
+    camera_port = port_value
+    print(camera_ip, camera_port)
+    return camera_ip, camera_port
 
 print('Resetting sequence number to', reset_sequence_number())
 
 # GUI
 from tkinter import *
 root = Tk()
+display_message = StringVar()
 root.title('VISCA IP Camera Controller')
 Label(root, text='VISCA IP Camera Controller').grid(row=0, column=0, columnspan=100)
 Label(root, text='Presets').grid(row=1, column=0, columnspan=2)
@@ -130,7 +142,7 @@ Button(root, text='Stop', command=lambda: send_message(pan_stop)).grid(row=2, co
 Button(root, text='Home', command=lambda: send_message(pan_home)).grid(row=4, column=3)
 
 # slider to set speed for pan_speed and tilt_speed (0x01 to 0x17)
-speed_slider = Scale(root, from_=0, to=17, variable=speed, orient=HORIZONTAL, label='Speed').grid(row=5, column=2, columnspan=3)
+Scale(root, from_=0, to=17, variable=speed, orient=HORIZONTAL, label='Speed').grid(row=5, column=2, columnspan=3)
 
 Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=1, column=6)
 
@@ -141,9 +153,11 @@ Button(root, text='Zoom Stop', command=lambda: send_message(zoom_stop)).grid(row
 Button(root, text='Focus Near', command=lambda: send_message(focus_near)).grid(row=2, column=6)
 Button(root, text='Focus Far', command=lambda: send_message(focus_far)).grid(row=3, column=6)
 
-Button(root, text='Info Off', command=lambda: send_message(information_display_off)).grid(row=6, column=6)
+Button(root, text='Info Off', command=lambda: send_message(information_display_off)).grid(row=5, column=6)
 
 # IP Label
-Label(root, text=ip+':'+str(port)).grid(row=6, column=0, columnspan=3)
+Label(root, text=camera_ip+':'+str(camera_port)).grid(row=6, column=0, columnspan=3)
+# Message Label
+Label(root, textvariable=display_message).grid(row=6, column=4, columnspan=3)
 
 root.mainloop()
