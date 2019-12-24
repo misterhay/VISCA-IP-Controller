@@ -14,10 +14,12 @@ completion_message = bytearray.fromhex('90 5Y FF'.replace('Y', '1'))
 visca_command_dictionary = {
     b'81010601':'pan',
     b'81010408':'focus',
+    b'81010438':'autofocus',
     b'81010407':'zoom',
     b'8101043f':'memory',
     b'81017e01':'information_display',
-    b'81010400':'camera_power'
+    b'81010400':'camera_power',
+    b'01':'reset_sequence_number'
     }
 
 
