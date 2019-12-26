@@ -13,8 +13,8 @@ import socket
 import binascii  # for printing the messages we send
 
 ### VISCA sender (socket)
-#camera_ip = '192.168.0.100'
-camera_ip = '127.0.0.1'
+camera_ip = '192.168.0.100'
+#camera_ip = '127.0.0.1'
 camera_port = 52381
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
 
