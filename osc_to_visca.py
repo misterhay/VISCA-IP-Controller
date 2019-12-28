@@ -28,6 +28,7 @@ camera_on = '81 01 04 00 02 FF'
 information_display_off = '81 01 7E 01 18 03 FF'
 memory_recall = '81 01 04 3F 02 0p FF' # p: Memory number (=0 to F)
 memory_set = '81 01 04 3F 01 0p FF' # p: Memory number (=0 to F)
+movement_speed = '01'
 '''
 pan_speed = '05'
 tilt_speed = '05'
@@ -168,19 +169,19 @@ def parse_osc_message(osc_address, osc_path, args):
     elif osc_command == 'reset_sequence_number':
         reset_sequence_number_function()
         send_osc(osc_command, 1.0)
+    elif speed in osc_command: # e.g. speed01 or speed15
+        global movement_speed
+        movement_speed = osc_command[4:]
+        send_osc('MovementSpeedLabel', movement_speed)
     elif 'pan' in osc_command:
         if 'speed' not in osc_command:
             if osc_argument > 0:
-                pan_command = pan_dictionary[osc_command].replace('VV', '05').replace('WW', '05')
+                pan_command = pan_dictionary[osc_command].replace('VV', movement_speed).replace('WW', movement_speed)
                 send_visca(pan_command)
             else:
                 send_visca(pan_stop)
         else:
             print("I can't yet set pan_tilt_speed")
-    #elif osc_command == 'pan_tilt_speed':
-    #    global pan_speed
-    #    pan_speed = floor(osc_argument)
-    #    send_osc('pan_tilt_speed_label', pan_speed)
     else:
         print("I don't know what to do with", osc_command, osc_argument)
 
