@@ -169,10 +169,12 @@ def parse_osc_message(osc_address, osc_path, args):
     elif osc_command == 'reset_sequence_number':
         reset_sequence_number_function()
         send_osc(osc_command, 1.0)
-    elif speed in osc_command: # e.g. speed01 or speed15
+    elif 'speed' in osc_command: # e.g. speed01 or speed15
         global movement_speed
-        movement_speed = osc_command[4:]
+        movement_speed = osc_command[5:]
         send_osc('MovementSpeedLabel', movement_speed)
+        #send_osc(osc_command, 1)
+        print('set speed to', movement_speed)
     elif 'pan' in osc_command:
         if 'speed' not in osc_command:
             if osc_argument > 0:
