@@ -16,7 +16,7 @@ s.settimeout(2.0) # only wait for a response for 2 seconds
 
 
 # Payloads
-
+#received_message = '' # a place to store the OSC messages we'll receive
 sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
 reset_sequence_number = '02 00 00 01 00 00 00 01 01'
 
@@ -40,14 +40,14 @@ memory_recall = '81 01 04 3F 02 0p FF' # p: Memory number (=0 to F)
 #Pan-tilt Drive
 # VV: Pan speed setting 0x01 (low speed) to 0x18
 # WW: Tilt speed setting 0x01 (low speed) to 0x17
-pan_speed = '05'
-tilt_speed = '05'
-speed = 5
+movement_speed = '05'
+pan_speed = movement_speed
+tilt_speed = movement_speed
+
 # YYYY: Pan Position DE00 to 2200 (CENTER 0000)
 # ZZZZ: Tilt Position FC00 to 1200 (CENTER 0000)
-YYYY = '0000'
-ZZZZ = '0000'
-
+#YYYY = '0000'
+#ZZZZ = '0000'
 pan_up = '81 01 06 01 VV WW 03 01 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
 pan_down = '81 01 06 01 VV WW 03 02 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
 pan_left = '81 01 06 01 VV WW 01 03 FF'.replace('VV', str(pan_speed)).replace('WW', str(tilt_speed))
@@ -85,7 +85,7 @@ def memory_set_function(memory_number):
 
 def send_message(message_string):
     global sequence_number
-    global received_message
+    #global received_message
     payload_type = bytearray.fromhex('01 00')
     payload = bytearray.fromhex(message_string)
     payload_length = len(payload).to_bytes(2, 'big')
@@ -158,7 +158,8 @@ Button(root, text='Stop', command=lambda: send_message(pan_stop)).grid(row=2, co
 Button(root, text='Home', command=lambda: send_message(pan_home)).grid(row=4, column=3)
 
 # slider to set speed for pan_speed and tilt_speed (0x01 to 0x17)
-Scale(root, from_=0, to=17, variable=speed, orient=HORIZONTAL, label='Speed').grid(row=5, column=2, columnspan=3)
+# still not quite sure about this...
+Scale(root, from_=0, to=17, variable=movement_speed, orient=HORIZONTAL, label='Speed').grid(row=5, column=2, columnspan=3)
 
 Button(root, text='Zoom In', command=lambda: send_message(zoom_tele)).grid(row=1, column=5)
 Button(root, text='Zoom Stop', command=lambda: send_message(zoom_stop)).grid(row=2, column=5)
