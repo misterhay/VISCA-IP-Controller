@@ -84,6 +84,7 @@ def reset_sequence_number_function():
         data = s.recvfrom(buffer_size)
         received_message = binascii.hexlify(data[0])
         #print('Received', received_message)
+        send_osc('reset_sequence_number', 1.0)
     except socket.timeout: # s.settimeout(2.0) #above
         received_message = 'No response from camera'
         print(received_message)
@@ -138,6 +139,8 @@ def parse_osc_message(osc_address, osc_path, args):
     osc_argument = args[0]
     if osc_command == 'camera_on':
         send_visca(camera_on)
+    elif osc_command == 'reset_sequence_number':
+        reset_sequence_number_function()
     elif 'memory_' in osc_command:
         memory_preset_number = osc_command[-1]
         if osc_argument > 0:
@@ -166,9 +169,6 @@ def parse_osc_message(osc_address, osc_path, args):
                 send_visca(focus_near)
         else:
             send_visca(focus_stop)
-    elif osc_command == 'reset_sequence_number':
-        reset_sequence_number_function()
-        send_osc(osc_command, 1.0)
     elif 'speed' in osc_command: # e.g. speed01 or speed15
         global movement_speed
         movement_speed = osc_command[5:]
@@ -186,6 +186,7 @@ def parse_osc_message(osc_address, osc_path, args):
             print("I can't yet set pan_tilt_speed")
     else:
         print("I don't know what to do with", osc_command, osc_argument)
+    send_osc('SentMessageLabel', osc_command)
 
 
 ## Start off by resetting sequence number
