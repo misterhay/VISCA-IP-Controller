@@ -71,7 +71,7 @@ zoom_tele_variable = '81 01 04 07 2p FF' # p=0 (Low) to 7 (High)
 zoom_wide_variable = '81 01 04 07 3p FF' # p=0 (Low) to 7 (High)
 zoom_direct = '81 01 04 47 0p 0q 0r 0s FF' # pqrs: Zoom Position
 
-def reset_sequence_number_function():
+def reset_sequence_number_function():  # this should probably be rolled into the send_visca function
     reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
     s.sendto(reset_sequence_number_message,(camera_ip, camera_port))
     global sequence_number
@@ -146,7 +146,7 @@ def parse_osc_message(osc_address, osc_path, args):
         if osc_argument > 0:
             if 'recall' in osc_command:
                 print('Memory recall', memory_preset_number)
-                send_visca(information_display_off)
+                send_visca(information_display_off) # so that it doesn't display on-screen
                 send_visca(memory_recall.replace('p', memory_preset_number))
             elif 'set' in osc_command:
                 print('Memory set', memory_preset_number)
@@ -157,7 +157,7 @@ def parse_osc_message(osc_address, osc_path, args):
                 send_visca(zoom_tele)
             elif osc_command == 'zoom_wide':
                 send_visca(zoom_wide)
-        else:
+        else: # when the button is released the osc_argument should be 0
             send_visca(zoom_stop)
     elif 'focus' in osc_command:
         if osc_command == 'focus_auto':
@@ -167,23 +167,23 @@ def parse_osc_message(osc_address, osc_path, args):
                 send_visca(focus_far)
             elif osc_command == 'focus_near':
                 send_visca(focus_near)
-        else:
+        else: # when the button is released the osc_argument should be 0
             send_visca(focus_stop)
-    elif 'speed' in osc_command: # e.g. speed01 or speed15
+    elif 'speed' in osc_command: # e.g. speed01 or speed15, from buttons not a slider
         global movement_speed
         movement_speed = osc_command[5:]
         send_osc('MovementSpeedLabel', movement_speed)
         #send_osc(osc_command, 1)
         print('set speed to', movement_speed)
     elif 'pan' in osc_command:
-        if 'speed' not in osc_command:
+        if 'speed' not in osc_command:  # this is a relic of the old TouchOSC layout
             if osc_argument > 0:
                 pan_command = pan_dictionary[osc_command].replace('VV', movement_speed).replace('WW', movement_speed)
                 send_visca(pan_command)
-            else:
+            else: # when the button is released the osc_argument should be 0
                 send_visca(pan_stop)
-        else:
-            print("I can't yet set pan_tilt_speed")
+        #else:
+        #    print("I can't yet set pan_tilt_speed")
     else:
         print("I don't know what to do with", osc_command, osc_argument)
     send_osc('SentMessageLabel', osc_command)
@@ -193,6 +193,7 @@ def parse_osc_message(osc_address, osc_path, args):
 sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
 reset_sequence_number_function()
 
+## Then start the OSC server to receive messages
 def protocol_factory():
     osc = aiosc.OSCProtocol({'//*': lambda osc_address, osc_path, *args: parse_osc_message(osc_address, osc_path, args)})
     return osc
