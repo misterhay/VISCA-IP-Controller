@@ -8,9 +8,10 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind(('', camera_port))
 
 visca_response_dictionary = {
+    b'01':'sequence number reset',
+    b'0f01':'sequence number error',
     b'9041ff':'acknowledge',
     b'9051ff':'complete',
-    b'0f01':'sequence number error'
 }
 
 while True:
@@ -27,9 +28,9 @@ while True:
     print(data)
     print('sequence_number', sequence_number)
     print('address', address)
-    print('port', port)
+    #print('port', port)
     print('payload_type', payload_type)
-    print('payload_length', payload_length)
+    #print('payload_length', payload_length)
     print('payload', payload)
     try:
         print(sequence_number, visca_response_dictionary[message_type])
