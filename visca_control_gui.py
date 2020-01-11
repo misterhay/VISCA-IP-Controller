@@ -11,14 +11,14 @@ camera_port = 52381
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
 # for receiving
 buffer_size = 1024
-s.bind(('', camera_port+1)) # use the port one higher than the camera's port
+s.bind(('', camera_port)) # use the port one higher than the camera's port
 s.settimeout(2.0) # only wait for a response for 2 seconds
 
 
 # Payloads
 #received_message = '' # a place to store the OSC messages we'll receive
 sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
-reset_sequence_number = '02 00 00 01 00 00 00 01 01'
+#reset_sequence_number = '02 00 00 01 00 00 00 01 01'
 
 camera_on = '81 01 04 00 02 FF'
 camera_off = '81 01 04 00 03 FF'
@@ -76,6 +76,7 @@ def memory_recall_function(memory_number):
     message_string = memory_recall.replace('p', str(memory_number))
     send_message(information_display_off) # otherwise we see a message on the camera output
     message = send_message(message_string)
+    send_message(information_display_off)
     return message
 
 def memory_set_function(memory_number):
@@ -90,10 +91,12 @@ def send_message(message_string):
     payload = bytearray.fromhex(message_string)
     payload_length = len(payload).to_bytes(2, 'big')
     message = payload_type + payload_length + sequence_number.to_bytes(4, 'big') + payload
-    if message_string == reset_sequence_number:
-        sequence_number = 1
-    else:
-        sequence_number += 1
+    #if message_string == reset_sequence_number:
+    #    sequence_number = 1
+    #    #sequence_number = 4294967295
+    #else:
+    #    sequence_number += 1
+    sequence_number += 1
     s.sendto(message, (camera_ip, camera_port))
     print(binascii.hexlify(message), 'sent to', camera_ip, camera_port, sequence_number)
     # add a timeout in case we don't hear back
@@ -108,13 +111,15 @@ def send_message(message_string):
         received_message = 'No response from camera'
         print(received_message)
 
-    if received_message == b'9051ff':
+    #if received_message == b'01110003000000119051ff':
+    if received_message[0:4] == '0111':
         display_message.set('Connected')
     else:
-        display_message.set(received_message)
+        display_message.set(received_message[0:4])
     return received_message
 
-def reset_sequence_number_function(): # we don't really need this anymore
+def reset_sequence_number_function():
+    global sequence_number
     reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
     s.sendto(reset_sequence_number_message,(camera_ip, camera_port))
     sequence_number = 1
@@ -135,7 +140,7 @@ display_message = StringVar()
 root.title('VISCA IP Camera Controller')
 Label(root, text='VISCA IP Camera Controller').grid(row=0, column=0, columnspan=100)
 
-Button(root, text='Connect', command=lambda: send_message(reset_sequence_number)).grid(row=1, column=6)
+Button(root, text='Connect', command=lambda: reset_sequence_number_function()).grid(row=1, column=6)
 Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=2, column=6)
 
 Label(root, text='Presets').grid(row=1, column=0, columnspan=2)
