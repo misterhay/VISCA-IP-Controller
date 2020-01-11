@@ -12,7 +12,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
 # for receiving
 buffer_size = 1024
 s.bind(('', camera_port)) # use the port one higher than the camera's port
-s.settimeout(2.0) # only wait for a response for 2 seconds
+s.settimeout(1) # only wait for a response for 1 second
 
 
 # Payloads
@@ -76,7 +76,7 @@ def memory_recall_function(memory_number):
     message_string = memory_recall.replace('p', str(memory_number))
     send_message(information_display_off) # otherwise we see a message on the camera output
     message = send_message(message_string)
-    send_message(information_display_off)
+    #send_message(information_display_off)
     return message
 
 def memory_set_function(memory_number):
