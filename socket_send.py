@@ -8,7 +8,7 @@ buffer_size = 1024
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
 
 # only necessary for receiving, we can probably bind to camera_ip
-s.bind(('', camera_port)) # use the port one higher than the camera's port
+#s.bind(('', camera_port)) # use the port one higher than the camera's port
 
 '''
 camera_on = '81 01 04 00 02 FF'
@@ -24,12 +24,13 @@ s.sendto(visca_message, (camera_ip, camera_port))
 print('Sent', visca_message, 'to', camera_ip)
 
 # listen for a response
-
+'''
 import binascii
 print('listening')
 data = s.recvfrom(buffer_size)
 received_message = binascii.hexlify(data[0])
 print('Received', received_message)
+'''
 #data = s.recvfrom(buffer_size)
 #received_message = binascii.hexlify(data[0])
 #print('Received', received_message)
