@@ -4,6 +4,7 @@
 
 import socket
 import binascii # for printing the messages we send, not really necessary
+from time import sleep
 
 camera_ip = '192.168.0.100'
 #camera_ip = '127.0.0.1'
@@ -11,8 +12,8 @@ camera_port = 52381
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
 # for receiving
 buffer_size = 1024
-s.bind(('', camera_port)) # use the port one higher than the camera's port
-s.settimeout(1) # only wait for a response for 1 second
+#s.bind(('', camera_port)) # use the port one higher than the camera's port
+#s.settimeout(1) # only wait for a response for 1 second
 
 
 # Payloads
@@ -75,8 +76,10 @@ focus_infinity = '81 01 04 18 02 FF'
 def memory_recall_function(memory_number):
     message_string = memory_recall.replace('p', str(memory_number))
     send_message(information_display_off) # otherwise we see a message on the camera output
+    sleep(0.25)
     message = send_message(message_string)
-    #send_message(information_display_off)
+    sleep(1)
+    send_message(information_display_off)
     return message
 
 def memory_set_function(memory_number):
@@ -98,8 +101,9 @@ def send_message(message_string):
     #    sequence_number += 1
     sequence_number += 1
     s.sendto(message, (camera_ip, camera_port))
-    print(binascii.hexlify(message), 'sent to', camera_ip, camera_port, sequence_number)
+    #print(binascii.hexlify(message), 'sent to', camera_ip, camera_port, sequence_number)
     # add a timeout in case we don't hear back
+    '''
     try:
         data = s.recvfrom(buffer_size)
         received_message = binascii.hexlify(data[0])
@@ -116,6 +120,8 @@ def send_message(message_string):
         display_message.set('Connected')
     else:
         display_message.set(received_message[0:4])
+    #'''
+    received_message = 'test'
     return received_message
 
 def reset_sequence_number_function():
@@ -133,6 +139,9 @@ def store_network_values(ip_value, port_value): # we don't really need this anym
     print(camera_ip, camera_port)
     return camera_ip, camera_port
 
+# start by resetting the sequence number
+reset_sequence_number_function()
+
 # GUI
 from tkinter import *
 root = Tk()
@@ -140,11 +149,11 @@ display_message = StringVar()
 root.title('VISCA IP Camera Controller')
 Label(root, text='VISCA IP Camera Controller').grid(row=0, column=0, columnspan=100)
 
-Button(root, text='Connect', command=lambda: reset_sequence_number_function()).grid(row=1, column=6)
+Button(root, text='Connect', command=reset_sequence_number_function()).grid(row=1, column=6)
 Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=2, column=6)
 
 Label(root, text='Presets').grid(row=1, column=0, columnspan=2)
-Button(root, text=1, command=lambda: memory_recall_function(0)).grid(row=2, column=0)
+Button(root, text=1, command=lambda: memory_recall_function(6)).grid(row=2, column=0)
 Button(root, text=2, command=lambda: memory_recall_function(1)).grid(row=2, column=1, padx=5)
 Button(root, text=3, command=lambda: memory_recall_function(2)).grid(row=3, column=0)
 Button(root, text=4, command=lambda: memory_recall_function(3)).grid(row=3, column=1)
