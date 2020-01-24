@@ -10,7 +10,7 @@ import aiosc # for receiving OSC
 from pythonosc import udp_client # for sending OSC
 from math import floor  # for fader
 import socket
-import binascii  # for printing the messages we send
+import binascii  # for printing the visca messages
 
 ### VISCA sender (socket)
 camera_ip = '192.168.0.100'
@@ -20,8 +20,8 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
 
 ### VISCA receiver
 buffer_size = 1024
-s.bind(('', camera_port+1)) # use the port one higher than the camera's port
-s.settimeout(2.0) # only wait for a response for 2 seconds
+s.bind(('', camera_port)) # for testing use the port one higher than the camera's port
+s.settimeout(1.0) # only wait for a response for 1 second
 
 ### VISCA Commands (Payloads)
 camera_on = '81 01 04 00 02 FF'
@@ -130,7 +130,6 @@ def send_osc(osc_command, osc_send_argument):
     osc_client.send_message(osc_message_to_send, osc_send_argument)
 
 ### OSC receiving server
-
 def parse_osc_message(osc_address, osc_path, args):
     global touchOSC_ip
     touchOSC_ip = osc_address[0]
@@ -173,7 +172,6 @@ def parse_osc_message(osc_address, osc_path, args):
         global movement_speed
         movement_speed = osc_command[5:]
         send_osc('MovementSpeedLabel', movement_speed)
-        #send_osc(osc_command, 1)
         print('set speed to', movement_speed)
     elif 'pan' in osc_command:
         if 'speed' not in osc_command:  # this is a relic of the old TouchOSC layout
@@ -182,8 +180,6 @@ def parse_osc_message(osc_address, osc_path, args):
                 send_visca(pan_command)
             else: # when the button is released the osc_argument should be 0
                 send_visca(pan_stop)
-        #else:
-        #    print("I can't yet set pan_tilt_speed")
     else:
         print("I don't know what to do with", osc_command, osc_argument)
     send_osc('SentMessageLabel', osc_command)
