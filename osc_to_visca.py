@@ -1,4 +1,4 @@
-# receive OSC messages and send VISCA controls to camera (both UDP)
+# receive OSC messages and send VISCA control messages to camera (both UDP)
 
 # pip3 install aiosc
 # https://pypi.org/project/aiosc/
@@ -52,6 +52,10 @@ pan_dictionary = {
     'pan_down_left' : '81 01 06 01 VV WW 01 02 FF',
     'pan_down_right' : '81 01 06 01 VV WW 02 02 FF'}
 
+# YYYY: Pan Position DE00 (−170 degree) to 2200 (170 degree) (CENTER 0000)
+# ZZZZ: Tilt Position EE00 (–90 degree) to 0400 (90 degree) (CENTER 0000)
+# for high speed VV = 18 and WW = 17
+pan_direct = '8x 01 06 02 18 17 0Y 0Y 0Y 0Y 0Z 0Z 0Z 0Z FF' # absolute position  
 pan_stop = '81 01 06 01 15 15 03 03 FF' # replaced VV and WW with 15
 pan_home = '81 01 06 04 FF'
 pan_reset = '81 01 06 05 FF'
@@ -70,6 +74,12 @@ zoom_wide = '81 01 04 07 03 FF'
 zoom_tele_variable = '81 01 04 07 2p FF' # p=0 (Low) to 7 (High)
 zoom_wide_variable = '81 01 04 07 3p FF' # p=0 (Low) to 7 (High)
 zoom_direct = '81 01 04 47 0p 0q 0r 0s FF' # pqrs: Zoom Position
+zoom_focus_direct = '81 01 04 47 0p 0q 0r 0s 0t 0u 0v 0w FF' # pqrs: Zoom Position  tuvw: Focus Position
+
+inquiry_lens_control = '81 09 7E 7E 00 FF'
+# response: 81 50 0p 0q 0r 0s 0H 0L 0t 0u 0v 0w 00 xx xx FF
+inquiry_camera_control = '81 09 7E 7E 01 FF'
+
 
 def reset_sequence_number_function():  # this should probably be rolled into the send_visca function
     reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
