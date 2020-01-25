@@ -62,6 +62,12 @@ pan_stop = '81 01 06 01 VV WW 03 03 FF'.replace('VV', str(pan_speed)).replace('W
 #pan_relative_position = '81 01 06 03 VV WW 0Y 0Y 0Y 0Y 0Z 0Z 0Z 0Z FF'.replace('VV', str(VV))
 pan_home = '81 01 06 04 FF'
 pan_reset = '81 01 06 05 FF'
+zoom_direct = '81 01 04 47 0p 0q 0r 0s FF' # pqrs: Zoom Position
+zoom_focus_direct = '81 01 04 47 0p 0q 0r 0s 0t 0u 0v 0w FF' # pqrs: Zoom Position  tuvw: Focus Position
+
+inquiry_lens_control = '81 09 7E 7E 00 FF'
+# response: 81 50 0p 0q 0r 0s 0H 0L 0t 0u 0v 0w 00 xx xx FF
+inquiry_camera_control = '81 09 7E 7E 01 FF'
 
 focus_stop = '81 01 04 08 00 FF'
 focus_far = '81 01 04 08 02 FF'
