@@ -1,5 +1,5 @@
 # pip3 install aiosc
-# https://pypi.org/project/aiosc/
+# https://pypi.org/project/aiosc
 # https://github.com/artfwo/aiosc
 
 import asyncio
@@ -14,8 +14,10 @@ osc_argument = 5
 
 loop = asyncio.get_event_loop()
 #loop.run_until_complete(aiosc.send((touchOSC_ip, touchOSC_port), '/1/pan_tilt_speed', 5))
-loop.run_until_complete(aiosc.send((touchOSC_ip, touchOSC_port), '/1/'+osc_command, osc_argument))
+#loop.run_until_complete(aiosc.send((touchOSC_ip, touchOSC_port), '/1/'+osc_command, osc_argument))
+loop.run_until_complete(aiosc.send(('10.0.0.201', 9000), '/ch/01/mix/fader', 0.5))
 #'''
+print('complete')
 
 ''' server works
 def print_message(addr, path, args):
