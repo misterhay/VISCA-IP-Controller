@@ -1,23 +1,44 @@
 #! /usr/bin/env python3
-# A Python GUI for streaming to YouTube from OBS recording using ffmpeg
+# for streaming to YouTube from OBS recording using ffmpeg
 
+stream_key = 'xxxx-xxxx-xxxx-xxxx'
+
+print("If you haven't started the recording already, press Ctrl-c to cancel this...")
+
+#import glob
+from datetime import datetime
+from pathlib import Path
 import os
-import time
+#print(pathlib.Path.cwd())
 
-recording_path = '/home/misterhay/Videos/'
+#recording_path = '/home/misterhay/Videos'
+recording_path = '/Users/davidhay/Movies'
+
+p = Path(recording_path)
+time, newest_file = max((f.stat().st_mtime, f) for f in p.iterdir())
+#print(newest_file)
+#print(str(newest_file))
+
+ffmpeg_path = ''
+youtube_server = 'rtmp://a.rtmp.youtube.com/live2/'
+command = ffmpeg_path+'ffmpeg -re -i '+str(newest_file)+' -acodec copy -vcodec copy -f flv '+youtube_server+stream_key
+print(command)
+os.system(command)
+
+'''
 for root, dirs, files in os.walk(recording_path, topdown=False):
-    sorted_files = sorted(files, key=os.path.getmtime)
-    print(sorted_files)
+    #sorted_files = sorted(files, key=os.path.getmtime)
+    #print(sorted_files)
 
     for name in files:
         filename = os.path.join(root, name)
         #print(filename)
-        file_stats = os.stat(filename)
+        #file_stats = os.stat(filename)
         #print(file_stats.st_mtime)
 
         #modification_time = time.ctime(file_stats[stat.ST_MTIME])
         #print(modification_time)
-
+'''
 #files = sorted(recording_path, key=os.path.getmtime)
 #print(files)
 
