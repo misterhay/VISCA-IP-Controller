@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 stream_key = 'xxxx-xxxx-xxxx-xxxx'
-recording_path = '/home/misterhay/Videos'
+recording_path = '/home/username/Videos'
 ffmpeg_path = ''
 
 from datetime import datetime
