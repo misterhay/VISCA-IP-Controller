@@ -17,9 +17,9 @@ buffer_size = 1024
 
 
 # Payloads
-#received_message = '' # a place to store the OSC messages we'll receive
+received_message = '' # a place to store the OSC messages we'll receive
 sequence_number = 1 # a global variable that we'll iterate each command, remember 0x0001
-#reset_sequence_number = '02 00 00 01 00 00 00 01 01'
+reset_sequence_number = '02 00 00 01 00 00 00 01 01'
 
 camera_on = '81 01 04 00 02 FF'
 camera_off = '81 01 04 00 03 FF'
@@ -127,26 +127,20 @@ def send_message(message_string):
     else:
         display_message.set(received_message[0:4])
     #'''
-    received_message = 'test'
     return received_message
 
+'''
 def reset_sequence_number_function():
     global sequence_number
     reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
     s.sendto(reset_sequence_number_message,(camera_ip, camera_port))
     sequence_number = 1
     return sequence_number
-
-def store_network_values(ip_value, port_value): # we don't really need this anymore
-    global camera_ip
-    global camera_port
-    camera_ip = ip_value
-    camera_port = port_value
-    print(camera_ip, camera_port)
-    return camera_ip, camera_port
+'''
 
 # start by resetting the sequence number
-reset_sequence_number_function()
+#reset_sequence_number_function()
+send_message(reset_sequence_number)
 
 # GUI
 from tkinter import *
@@ -155,10 +149,12 @@ display_message = StringVar()
 root.title('VISCA IP Camera Controller')
 Label(root, text='VISCA IP Camera Controller').grid(row=0, column=0, columnspan=100)
 
-Button(root, text='Connect', command=reset_sequence_number_function()).grid(row=1, column=6)
+#Button(root, text='Connect', command=reset_sequence_number_function()).grid(row=1, column=6)
+Button(root, text='Connect', command=send_message(reset_sequence_number)).grid(row=1, column=6)
 Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=2, column=6)
 
 Label(root, text='Presets').grid(row=1, column=0, columnspan=2)
+
 Button(root, text=1, command=lambda: memory_recall_function(6)).grid(row=2, column=0)
 Button(root, text=2, command=lambda: memory_recall_function(1)).grid(row=2, column=1, padx=5)
 Button(root, text=3, command=lambda: memory_recall_function(2)).grid(row=3, column=0)
