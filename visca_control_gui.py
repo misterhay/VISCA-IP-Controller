@@ -86,6 +86,7 @@ def memory_recall_function(memory_number):
     message = send_message(message_string)
     sleep(1)
     send_message(information_display_off)
+    print(memory_number)
     return message
 
 def memory_set_function(memory_number):
@@ -147,20 +148,26 @@ from tkinter import *
 root = Tk()
 display_message = StringVar()
 root.title('VISCA IP Camera Controller')
-Label(root, text='VISCA IP Camera Controller').grid(row=0, column=0, columnspan=100)
+#Label(root, text='VISCA IP Camera Controller').grid(row=0, column=0, columnspan=100)
 
 #Button(root, text='Connect', command=reset_sequence_number_function()).grid(row=1, column=6)
 Button(root, text='Connect', command=send_message(reset_sequence_number)).grid(row=1, column=6)
 Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=2, column=6)
 
-Label(root, text='Presets').grid(row=1, column=0, columnspan=2)
-
+Label(root, text='Recall').grid(row=1, column=0, columnspan=2)
+for i in range(12):
+    Button(root, text=i, command=lambda: memory_recall_function(6)).grid(row=i+2, column=0)
+'''
 Button(root, text=1, command=lambda: memory_recall_function(6)).grid(row=2, column=0)
 Button(root, text=2, command=lambda: memory_recall_function(1)).grid(row=2, column=1, padx=5)
 Button(root, text=3, command=lambda: memory_recall_function(2)).grid(row=3, column=0)
 Button(root, text=4, command=lambda: memory_recall_function(3)).grid(row=3, column=1)
 Button(root, text=5, command=lambda: memory_recall_function(4)).grid(row=4, column=0)
 Button(root, text=6, command=lambda: memory_recall_function(5)).grid(row=4, column=1)
+'''
+Label(root, text='Store').grid(row=1, column=7, columnspan=2)
+for i in range(12):
+    Button(root, text=i, command=lambda: memory_set_function(6)).grid(row=i+2, column=7)
 
 Button(root, text='↑', command=lambda: send_message(pan_up)).grid(row=1, column=3)
 Button(root, text='←', command=lambda: send_message(pan_left)).grid(row=2, column=2)
@@ -175,7 +182,7 @@ Button(root, text='Home', command=lambda: send_message(pan_home)).grid(row=4, co
 
 # slider to set speed for pan_speed and tilt_speed (0x01 to 0x17)
 # still not quite sure about this...
-Scale(root, from_=0, to=17, variable=movement_speed, orient=HORIZONTAL, label='Speed').grid(row=5, column=2, columnspan=3)
+#Scale(root, from_=0, to=17, variable=movement_speed, orient=HORIZONTAL, label='Speed').grid(row=5, column=2, columnspan=3)
 
 Button(root, text='Zoom In', command=lambda: send_message(zoom_tele)).grid(row=1, column=5)
 Button(root, text='Zoom Stop', command=lambda: send_message(zoom_stop)).grid(row=2, column=5)
@@ -187,8 +194,8 @@ Button(root, text='Focus Far', command=lambda: send_message(focus_far)).grid(row
 Button(root, text='Info Off', command=lambda: send_message(information_display_off)).grid(row=5, column=6)
 
 # IP Label
-Label(root, text=camera_ip+':'+str(camera_port)).grid(row=6, column=0, columnspan=3)
+#Label(root, text=camera_ip+':'+str(camera_port)).grid(row=6, column=0, columnspan=3)
 # Connection Label
-Label(root, textvariable=display_message).grid(row=6, column=4, columnspan=3)
+#Label(root, textvariable=display_message).grid(row=6, column=4, columnspan=3)
 
 root.mainloop()
