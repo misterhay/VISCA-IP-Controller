@@ -80,13 +80,12 @@ focus_manual = '81 01 04 38 03 FF'
 focus_infinity = '81 01 04 18 02 FF'
 
 def memory_recall_function(memory_number):
-    message_string = memory_recall.replace('p', str(memory_number))
     send_message(information_display_off) # otherwise we see a message on the camera output
     sleep(0.25)
+    message_string = memory_recall.replace('p', str(memory_number))
     message = send_message(message_string)
     sleep(1)
-    send_message(information_display_off)
-    print(memory_number)
+    send_message(information_display_off) # to make sure it doesn't display "done"
     return message
 
 def memory_set_function(memory_number):
@@ -130,18 +129,15 @@ def send_message(message_string):
     #'''
     return received_message
 
-'''
 def reset_sequence_number_function():
     global sequence_number
     reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
     s.sendto(reset_sequence_number_message,(camera_ip, camera_port))
     sequence_number = 1
     return sequence_number
-'''
 
 # start by resetting the sequence number
-#reset_sequence_number_function()
-send_message(reset_sequence_number)
+reset_sequence_number_function()
 
 # GUI
 from tkinter import *
@@ -150,24 +146,49 @@ display_message = StringVar()
 root.title('VISCA IP Camera Controller')
 #Label(root, text='VISCA IP Camera Controller').grid(row=0, column=0, columnspan=100)
 
-#Button(root, text='Connect', command=reset_sequence_number_function()).grid(row=1, column=6)
-Button(root, text='Connect', command=send_message(reset_sequence_number)).grid(row=1, column=6)
+#Button(root, text='Connect', command=send_message(reset_sequence_number)).grid(row=1, column=6)
+Button(root, text='Connect', command=reset_sequence_number_function()).grid(row=1, column=6)
 Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=2, column=6)
 
 Label(root, text='Recall').grid(row=1, column=0, columnspan=2)
-for i in range(12):
-    Button(root, text=i, command=lambda: memory_recall_function(6)).grid(row=i+2, column=0)
-'''
-Button(root, text=1, command=lambda: memory_recall_function(6)).grid(row=2, column=0)
-Button(root, text=2, command=lambda: memory_recall_function(1)).grid(row=2, column=1, padx=5)
-Button(root, text=3, command=lambda: memory_recall_function(2)).grid(row=3, column=0)
-Button(root, text=4, command=lambda: memory_recall_function(3)).grid(row=3, column=1)
-Button(root, text=5, command=lambda: memory_recall_function(4)).grid(row=4, column=0)
-Button(root, text=6, command=lambda: memory_recall_function(5)).grid(row=4, column=1)
-'''
+Button(root, text=0, command=lambda: memory_recall_function(0)).grid(row=2, column=0)
+Button(root, text=1, command=lambda: memory_recall_function(1)).grid(row=3, column=0)
+Button(root, text=2, command=lambda: memory_recall_function(2)).grid(row=4, column=0)
+Button(root, text=3, command=lambda: memory_recall_function(3)).grid(row=5, column=0)
+Button(root, text=4, command=lambda: memory_recall_function(4)).grid(row=6, column=0)
+Button(root, text=5, command=lambda: memory_recall_function(5)).grid(row=7, column=0)
+Button(root, text=6, command=lambda: memory_recall_function(6)).grid(row=8, column=0)
+Button(root, text=7, command=lambda: memory_recall_function(7)).grid(row=9, column=0)
+Button(root, text=8, command=lambda: memory_recall_function(8)).grid(row=10, column=0)
+Button(root, text=9, command=lambda: memory_recall_function(9)).grid(row=11, column=0)
+Button(root, text='A', command=lambda: memory_recall_function('A')).grid(row=12, column=0)
+Button(root, text='B', command=lambda: memory_recall_function('B')).grid(row=13, column=0)
+Button(root, text='C', command=lambda: memory_recall_function('C')).grid(row=14, column=0)
+Button(root, text='D', command=lambda: memory_recall_function('D')).grid(row=15, column=0)
+Button(root, text='E', command=lambda: memory_recall_function('E')).grid(row=16, column=0)
+Button(root, text='F', command=lambda: memory_recall_function('F')).grid(row=17, column=0)
+
+#for i in range(10): # needs to be 0123456789ABCDEF 
+#    Button(root, text=i, command=lambda: memory_recall_function(i)).grid(row=i+2, column=0)
+#    Button(root, text=i, command=lambda: memory_set_function(i)).grid(row=i+2, column=7)
+
 Label(root, text='Store').grid(row=1, column=7, columnspan=2)
-for i in range(12):
-    Button(root, text=i, command=lambda: memory_set_function(6)).grid(row=i+2, column=7)
+Button(root, text=0, command=lambda: memory_set_function(0)).grid(row=2, column=7)
+Button(root, text=1, command=lambda: memory_set_function(1)).grid(row=3, column=7)
+Button(root, text=2, command=lambda: memory_set_function(2)).grid(row=4, column=7)
+Button(root, text=3, command=lambda: memory_set_function(3)).grid(row=5, column=7)
+Button(root, text=4, command=lambda: memory_set_function(4)).grid(row=6, column=7)
+Button(root, text=5, command=lambda: memory_set_function(5)).grid(row=7, column=7)
+Button(root, text=6, command=lambda: memory_set_function(6)).grid(row=8, column=7)
+Button(root, text=7, command=lambda: memory_set_function(7)).grid(row=9, column=7)
+Button(root, text=8, command=lambda: memory_set_function(8)).grid(row=10, column=7)
+Button(root, text=9, command=lambda: memory_set_function(9)).grid(row=11, column=7)
+Button(root, text='A', command=lambda: memory_set_function('A')).grid(row=12, column=7)
+Button(root, text='B', command=lambda: memory_set_function('B')).grid(row=13, column=7)
+Button(root, text='C', command=lambda: memory_set_function('C')).grid(row=14, column=7)
+Button(root, text='D', command=lambda: memory_set_function('D')).grid(row=15, column=7)
+Button(root, text='E', command=lambda: memory_set_function('E')).grid(row=16, column=7)
+Button(root, text='F', command=lambda: memory_set_function('F')).grid(row=17, column=7)
 
 Button(root, text='↑', command=lambda: send_message(pan_up)).grid(row=1, column=3)
 Button(root, text='←', command=lambda: send_message(pan_left)).grid(row=2, column=2)
