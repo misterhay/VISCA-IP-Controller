@@ -89,7 +89,30 @@ def memory_recall_function(memory_number):
     return message
 
 def memory_set_function(memory_number):
-    message_string = memory_set.replace('p', str(memory_number))
+    # read all the entry boxes
+    entries[0] = entry0.get()
+    entries[1] = entry1.get()
+    entries[2] = entry2.get()
+    entries[3] = entry3.get()
+    entries[4] = entry4.get()
+    entries[5] = entry5.get()
+    entries[6] = entry6.get()
+    entries[7] = entry7.get()
+    entries[8] = entry8.get()
+    entries[9] = entry9.get()
+    entries[10] = entryA.get()
+    entries[11] = entryB.get()
+    entries[12] = entryC.get()
+    entries[13] = entryD.get()
+    entries[14] = entryE.get()
+    entries[15] = entryF.get()
+    for i, e in enumerate(entries):
+        if e != '':
+            memory_labels[i] = e
+    update_memory_labels()
+    hexadecimal_memory_number = hex(memory_number)[-1]
+    message_string = memory_set.replace('p', hexadecimal_memory_number)
+    print(message_string)
     message = send_message(message_string)
     return message
 
@@ -136,19 +159,27 @@ def reset_sequence_number_function():
     sequence_number = 1
     return sequence_number
 
+memory_labels = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F']
+entries = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F']
+def update_memory_labels():
+    for r, l in enumerate(memory_labels):
+        Label(root, text=l).grid(sticky=W, row=r+2, column=1)
+
+
 # start by resetting the sequence number
 reset_sequence_number_function()
 
 # GUI
-from tkinter import *
+from tkinter import Tk, StringVar, Button, Label, Entry, W
 root = Tk()
 display_message = StringVar()
 root.title('VISCA IP Camera Controller')
 #Label(root, text='VISCA IP Camera Controller').grid(row=0, column=0, columnspan=100)
 
 #Button(root, text='Connect', command=send_message(reset_sequence_number)).grid(row=1, column=6)
-Button(root, text='Connect', command=reset_sequence_number_function()).grid(row=1, column=6)
-Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=2, column=6)
+Button(root, text='Cam On', command=lambda: send_message(camera_on)).grid(row=1, column=6)
+Button(root, text='Connect', command=reset_sequence_number_function()).grid(row=2, column=6)
+Button(root, text='Cam Off', command=lambda: send_message(camera_off)).grid(row=3, column=6)
 
 Label(root, text='Recall').grid(row=1, column=0, columnspan=2)
 Button(root, text=0, command=lambda: memory_recall_function(0)).grid(row=2, column=0)
@@ -167,10 +198,7 @@ Button(root, text='C', command=lambda: memory_recall_function('C')).grid(row=14,
 Button(root, text='D', command=lambda: memory_recall_function('D')).grid(row=15, column=0)
 Button(root, text='E', command=lambda: memory_recall_function('E')).grid(row=16, column=0)
 Button(root, text='F', command=lambda: memory_recall_function('F')).grid(row=17, column=0)
-
-#for i in range(10): # needs to be 0123456789ABCDEF 
-#    Button(root, text=i, command=lambda: memory_recall_function(i)).grid(row=i+2, column=0)
-#    Button(root, text=i, command=lambda: memory_set_function(i)).grid(row=i+2, column=7)
+update_memory_labels()
 
 Label(root, text='Store').grid(row=1, column=7, columnspan=2)
 Button(root, text=0, command=lambda: memory_set_function(0)).grid(row=2, column=7)
@@ -183,12 +211,45 @@ Button(root, text=6, command=lambda: memory_set_function(6)).grid(row=8, column=
 Button(root, text=7, command=lambda: memory_set_function(7)).grid(row=9, column=7)
 Button(root, text=8, command=lambda: memory_set_function(8)).grid(row=10, column=7)
 Button(root, text=9, command=lambda: memory_set_function(9)).grid(row=11, column=7)
-Button(root, text='A', command=lambda: memory_set_function('A')).grid(row=12, column=7)
-Button(root, text='B', command=lambda: memory_set_function('B')).grid(row=13, column=7)
-Button(root, text='C', command=lambda: memory_set_function('C')).grid(row=14, column=7)
-Button(root, text='D', command=lambda: memory_set_function('D')).grid(row=15, column=7)
-Button(root, text='E', command=lambda: memory_set_function('E')).grid(row=16, column=7)
-Button(root, text='F', command=lambda: memory_set_function('F')).grid(row=17, column=7)
+Button(root, text='A', command=lambda: memory_set_function(10)).grid(row=12, column=7)
+Button(root, text='B', command=lambda: memory_set_function(11)).grid(row=13, column=7)
+Button(root, text='C', command=lambda: memory_set_function(12)).grid(row=14, column=7)
+Button(root, text='D', command=lambda: memory_set_function(13)).grid(row=15, column=7)
+Button(root, text='E', command=lambda: memory_set_function(14)).grid(row=16, column=7)
+Button(root, text='F', command=lambda: memory_set_function(15)).grid(row=17, column=7)
+
+entry0 = Entry(root, textvariable=StringVar())
+entry0.grid(row=2, column=8)
+entry1 = Entry(root, textvariable=StringVar())
+entry1.grid(row=3, column=8)
+entry2 = Entry(root, textvariable=StringVar())
+entry2.grid(row=4, column=8)
+entry3 = Entry(root, textvariable=StringVar())
+entry3.grid(row=5, column=8)
+entry4 = Entry(root, textvariable=StringVar())
+entry4.grid(row=6, column=8)
+entry5 = Entry(root, textvariable=StringVar())
+entry5.grid(row=7, column=8)
+entry6 = Entry(root, textvariable=StringVar())
+entry6.grid(row=8, column=8)
+entry7 = Entry(root, textvariable=StringVar())
+entry7.grid(row=9, column=8)
+entry8 = Entry(root, textvariable=StringVar())
+entry8.grid(row=10, column=8)
+entry9 = Entry(root, textvariable=StringVar())
+entry9.grid(row=11, column=8)
+entryA = Entry(root, textvariable=StringVar())
+entryA.grid(row=12, column=8)
+entryB = Entry(root, textvariable=StringVar())
+entryB.grid(row=13, column=8)
+entryC = Entry(root, textvariable=StringVar())
+entryC.grid(row=14, column=8)
+entryD = Entry(root, textvariable=StringVar())
+entryD.grid(row=15, column=8)
+entryE = Entry(root, textvariable=StringVar())
+entryE.grid(row=16, column=8)
+entryF = Entry(root, textvariable=StringVar())
+entryF.grid(row=17, column=8)
 
 Button(root, text='↑', command=lambda: send_message(pan_up)).grid(row=1, column=3)
 Button(root, text='←', command=lambda: send_message(pan_left)).grid(row=2, column=2)
