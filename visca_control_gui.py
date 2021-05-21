@@ -91,7 +91,7 @@ def memory_recall_function(memory_number):
 def memory_set_function(memory_number):
     hexadecimal_memory_number = hex(memory_number)[-1]
     message_string = memory_set.replace('p', hexadecimal_memory_number)
-    print(message_string)
+    #print(message_string)
     message = send_message(message_string)
     return message
 
@@ -143,16 +143,6 @@ def reset_sequence_number_function():
     s.sendto(reset_sequence_number_message,(camera_ip, camera_port))
     sequence_number = 1
     return sequence_number
-
-#memory_labels = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F']
-#entries = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F']
-#def update_memory_labels():
-    #for r, l in enumerate(memory_labels):
-    #for r in range(16):
-    #    Label(root, text=hex(r)[-1].upper()).grid(sticky=W, row=r+2, column=1)
-#    label0 = Label(root, text=entry0.get()).grid(sticky=W, row=2, column=1)
-#    Label(root, text=entry1.get()).grid(sticky=W, row=3, column=1)
-
 
 # start by resetting the sequence number
 reset_sequence_number_function()
