@@ -132,11 +132,9 @@ def send_message(message_string):
     return received_message
 
 def save_labels():
-    # read what's in entry boxes
-    
     with open('preset_labels.txt', 'w') as f:
-        #f.write()
-        pass
+        for entry in entry_boxes:
+            f.write(entry.get())
     f.close()
 
 def reset_sequence_number_function():
@@ -196,14 +194,15 @@ try:
     f.close()
 except:
     pass
+entry_boxes = []
 for e in range(16):
-    try:
-        label = labels[e]
-    except:
-        label = ''
     box = Entry(root)
-    box.insert(-1, label)
+    try:
+        box.insert(-1, labels[e])
+    except:
+        pass
     box.grid(row=e+2, column=1)
+    entry_boxes.append(box)
 Button(root, text='Save preset labels', command=save_labels).grid(row=18, column=1)
 
 # Store buttons and entry boxes
