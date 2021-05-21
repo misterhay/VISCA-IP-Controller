@@ -131,6 +131,14 @@ def send_message(message_string):
     #'''
     return received_message
 
+def save_labels():
+    # read what's in entry boxes
+    
+    with open('preset_labels.txt', 'w') as f:
+        #f.write()
+        pass
+    f.close()
+
 def reset_sequence_number_function():
     global sequence_number
     reset_sequence_number_message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
@@ -182,8 +190,21 @@ Button(root, text='C', command=lambda: memory_recall_function('C')).grid(row=14,
 Button(root, text='D', command=lambda: memory_recall_function('D')).grid(row=15, column=0)
 Button(root, text='E', command=lambda: memory_recall_function('E')).grid(row=16, column=0)
 Button(root, text='F', command=lambda: memory_recall_function('F')).grid(row=17, column=0)
+try:
+    with open('preset_labels.txt') as f:
+        labels = f.readlines()
+    f.close()
+except:
+    pass
 for e in range(16):
-    Entry(root).grid(row=e+2, column=1)
+    try:
+        label = labels[e]
+    except:
+        label = ''
+    box = Entry(root)
+    box.insert(-1, label)
+    box.grid(row=e+2, column=1)
+Button(root, text='Save preset labels', command=save_labels).grid(row=18, column=1)
 
 # Store buttons and entry boxes
 Label(root, text='Store', bg='red').grid(row=1, column=7, columnspan=2)

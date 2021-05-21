@@ -1,0 +1,15 @@
+wide
+full
+three-quarter
+medium
+close
+low
+high
+left full
+left three-quarter
+left medium
+left close
+right full
+right three-quarter
+right medium
+right close
