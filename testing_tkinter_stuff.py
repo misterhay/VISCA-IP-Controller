@@ -1,4 +1,11 @@
 print('-------')
+
+from camera import *
+print(camera_on)
+
+import camera as c
+print(c.camera_on)
+
 from tkinter import Tk, StringVar, Button, Label, Entry, W
 
 def changeLabel(text):
@@ -55,6 +62,8 @@ for e in range(16):
 Button(root, text='Save preset labels', command=save_labels).grid(row=18, column=1)
 
 root.mainloop()
+#'''
+
 
 #for x in range(16):
 #    print('label'+str(hex(x)[-1]).upper()+'.set(entry'+str(hex(x)[-1]).upper()+'.get())')
