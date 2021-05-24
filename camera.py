@@ -9,6 +9,11 @@ class Camera:
     tiltSpeed = 7 # 1 to 17
     zoomSpeed = 7 # 0 to 7
 
+    # for receiving
+    #buffer_size = 1024
+    #s.bind(('', camera_port)) # use the port one higher than the camera's port
+    #s.settimeout(1) # only wait for a response for 1 second
+
     def __init__(self, ip, port):
         self.ip = ip
         self.port = port
@@ -169,3 +174,26 @@ class Camera:
             self.send('81 01 04 58 03 FF')
         else:
             self.send('81 01 04 58 02 FF')
+
+    def recall(self, memory_number):
+        self.info_display_off() # otherwise we see a message on the camera output
+        self.sleep(0.25)
+        memory_hex = str(hex(memory_number)[2:])
+        self.send('81 01 04 3F 02 0'+memory_hex+' FF')
+        self.sleep(1)
+        self.info_display_off() # to make sure it doesn't display "done"
+
+    def memory_set(self, memory_number):
+        memory_hex = hex(memory_number)[-1]
+        self.send('81 01 04 3F 02 0p FF'.replace('p', memory_hex))
+    
+    def memory_reset(self, memory_number):
+        memory_hex = str(hex(memory_number)[2:])
+        self.send('81 01 04 3F 00 0'+memory_hex+' FF')
+    
+    def save_preset_labels(self):
+        with open('preset_labels.txt', 'w') as f:
+            for entry in self.entry_boxes:
+                f.write(entry.get())
+                f.write('\n')
+        f.close()
