@@ -135,6 +135,7 @@ def save_preset_labels():
     with open('preset_labels.txt', 'w') as f:
         for entry in entry_boxes:
             f.write(entry.get())
+            f.write('\n')
     f.close()
 
 def reset_sequence_number_function():
