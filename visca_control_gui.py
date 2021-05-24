@@ -135,6 +135,7 @@ def save_preset_labels():
     with open('preset_labels.txt', 'w') as f:
         for entry in entry_boxes:
             f.write(entry.get())
+            f.write('\n')
     f.close()
 
 def reset_sequence_number_function():
@@ -227,7 +228,7 @@ for e in range(16):
         pass
     box.grid(row=e+2, column=label_column)
     entry_boxes.append(box)
-Button(root, text='Save preset labels', bg=store_color, command=save_preset_labels).grid(row=18, column=label_column)
+Button(root, text='Save preset labels', bg=store_color, command=save_preset_labels).grid(row=1, column=label_column)
 
 # Pan and tilt buttons
 Button(root, text='↑', width=3, bg=pan_tilt_color, command=lambda: send_message(pan_up)).grid(row=pan_tilt_row, column=pan_tilt_column+1)
