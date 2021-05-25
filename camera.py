@@ -61,16 +61,16 @@ class Camera:
 
     def pan(self, direction, pan_speed, tilt_speed):
         try:
-            if 1 <= pan_speed <= 9:
-                pan_speed_hex = '0'+str(pan_speed)
-            if 10 <= pan_speed <= 18:
+            if 1 <= pan_speed <= 15:
+                pan_speed_hex = '0'+str(hex(pan_speed)[2:])
+            if 16 <= pan_speed <= 24:
                 pan_speed_hex = str(hex(pan_speed)[2:])
         except:
             pan_speed_hex = '00'
         try:
-            if 1 <= tilt_speed <= 9:
-                tilt_speed_hex = '0'+str(pan_speed)
-            if 10 <= tilt_speed <= 17:
+            if 1 <= tilt_speed <= 15:
+                tilt_speed_hex = '0'+str(hex(pan_speed)[2:])
+            if 16 <= tilt_speed <= 23:
                 tilt_speed_hex = str(hex(pan_speed)[2:])
         except:
             tilt_speed_hex = '00'
@@ -105,16 +105,16 @@ class Camera:
     
     def pan_absolute(self, pan_angle, tilt_angle, pan_speed, tilt_speed): # Pan Position 56832 (DE00) to 8704 (2200) (CENTER 0000)
         try:
-            if 1 <= pan_speed <= 9:
-                pan_speed_hex = '0'+str(pan_speed)
-            if 10 <= pan_speed <= 18:
+            if 1 <= pan_speed <= 15:
+                pan_speed_hex = '0'+str(hex(pan_speed)[2:])
+            if 16 <= pan_speed <= 24:
                 pan_speed_hex = str(hex(pan_speed)[2:])
         except:
             pan_speed_hex = '00'
         try:
-            if 1 <= tilt_speed <= 9:
-                tilt_speed_hex = '0'+str(pan_speed)
-            if 10 <= tilt_speed <= 17:
+            if 1 <= tilt_speed <= 15:
+                tilt_speed_hex = '0'+str(hex(pan_speed)[2:])
+            if 16 <= tilt_speed <= 23:
                 tilt_speed_hex = str(hex(pan_speed)[2:])
         except:
             tilt_speed_hex = '00'
