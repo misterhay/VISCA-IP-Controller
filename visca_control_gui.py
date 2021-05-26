@@ -11,7 +11,7 @@ camera_ip = '192.168.0.100'
 camera_port = 52381
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
 # for receiving
-buffer_size = 1024
+#buffer_size = 1024
 #s.bind(('', camera_port)) # use the port one higher than the camera's port
 #s.settimeout(1) # only wait for a response for 1 second
 
@@ -149,6 +149,7 @@ def reset_sequence_number_function():
 reset_sequence_number_function()
 
 # GUI
+
 from tkinter import Tk, StringVar, Button, Label, Entry, W
 root = Tk()
 display_message = StringVar()
@@ -239,7 +240,7 @@ Button(root, text='↖', width=3, bg=pan_tilt_color, command=lambda: send_messag
 Button(root, text='↗', width=3, bg=pan_tilt_color, command=lambda: send_message(pan_up_right)).grid(row=pan_tilt_row, column=pan_tilt_column+2)
 Button(root, text='↙', width=3, bg=pan_tilt_color, command=lambda: send_message(pan_down_left)).grid(row=pan_tilt_row+2, column=pan_tilt_column)
 Button(root, text='↘', width=3, bg=pan_tilt_color, command=lambda: send_message(pan_down_right)).grid(row=pan_tilt_row+2, column=pan_tilt_column+2)
-Button(root, text='⏹︎', width=3, bg=pan_tilt_color, command=lambda: send_message(pan_stop)).grid(row=pan_tilt_row+1, column=pan_tilt_column+1)
+Button(root, text='■', width=3, bg=pan_tilt_color, command=lambda: send_message(pan_stop)).grid(row=pan_tilt_row+1, column=pan_tilt_column+1)
 #Button(root, text='Home', command=lambda: send_message(pan_home)).grid(row=pan_tilt_row+2, column=pan_tilt_column+1)
 
 
