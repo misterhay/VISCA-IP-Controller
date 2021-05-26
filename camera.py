@@ -5,9 +5,9 @@ class Camera:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     sequence_number = 1
-    panSpeed = 7 # 1 to 18
-    tiltSpeed = 7 # 1 to 17
-    zoomSpeed = 7 # 0 to 7
+    #pan_speed = 7 # 0x01 to 0x18
+    #tilt_speed = 7 # 0x01 to 0x17
+    #zoom_speed = 7 # 0 to 7
 
     # for receiving
     #buffer_size = 1024
@@ -40,7 +40,7 @@ class Camera:
         message = payload_type + payload_length + self.sequence_number.to_bytes(4, 'big') + payload
         self.s.sendto(message, (self.ip, self.port))
         self.sequence_number += 1
-        #self.send_bytes(message)
+        print(message)
 
     def reset_sequence_number(self):
         message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
@@ -65,6 +65,8 @@ class Camera:
                 pan_speed_hex = '0'+str(hex(pan_speed)[2:])
             if 16 <= pan_speed <= 24:
                 pan_speed_hex = str(hex(pan_speed)[2:])
+            else:
+                pan_speed_hex = '00'
         except:
             pan_speed_hex = '00'
         try:
@@ -72,6 +74,8 @@ class Camera:
                 tilt_speed_hex = '0'+str(hex(pan_speed)[2:])
             if 16 <= tilt_speed <= 23:
                 tilt_speed_hex = str(hex(pan_speed)[2:])
+            else:
+                tilt_speed_hex = '00'
         except:
             tilt_speed_hex = '00'
         if direction == 'up':
