@@ -150,7 +150,7 @@ reset_sequence_number_function()
 
 # GUI
 
-from tkinter import Tk, StringVar, Button, Label, Entry, W
+from tkinter import Tk, StringVar, Button, Label, Entry, Scale, W
 root = Tk()
 display_message = StringVar()
 root.title('VISCA IP Camera Controller')
@@ -243,8 +243,15 @@ Button(root, text='↘', width=3, bg=pan_tilt_color, command=lambda: send_messag
 Button(root, text='■', width=3, bg=pan_tilt_color, command=lambda: send_message(pan_stop)).grid(row=pan_tilt_row+1, column=pan_tilt_column+1)
 #Button(root, text='Home', command=lambda: send_message(pan_home)).grid(row=pan_tilt_row+2, column=pan_tilt_column+1)
 
-
-
+# Pan speed and Tilt speed
+Label(root, text='Pan Speed', bg=pan_tilt_color).grid(row=pan_tilt_row+3, column=pan_tilt_column)
+pan_speed_slider = Scale(root, from_=24, to=0, bg=pan_tilt_color)
+pan_speed_slider.set(7)
+pan_speed_slider.grid(row=pan_tilt_row+4, column=pan_tilt_column)
+Label(root, text='Tilt Speed', bg=pan_tilt_color).grid(row=pan_tilt_row+3, column=pan_tilt_column+1)
+tilt_speed_slider = Scale(root, from_=24, to=0, bg=pan_tilt_color)
+tilt_speed_slider.set(7)
+tilt_speed_slider.grid(row=pan_tilt_row+4, column=pan_tilt_column+1)
 
 # slider to set speed for pan_speed and tilt_speed (0x01 to 0x17)
 # still not quite sure about this...
