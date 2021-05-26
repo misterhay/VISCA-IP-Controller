@@ -5,9 +5,9 @@ class Camera:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     sequence_number = 1
-    panSpeed = 7 # 1 to 18
-    tiltSpeed = 7 # 1 to 17
-    zoomSpeed = 7 # 0 to 7
+    #pan_speed = 7 # 0x01 to 0x18
+    #tilt_speed = 7 # 0x01 to 0x17
+    #zoom_speed = 7 # 0 to 7
 
     # for receiving
     #buffer_size = 1024
@@ -40,7 +40,7 @@ class Camera:
         message = payload_type + payload_length + self.sequence_number.to_bytes(4, 'big') + payload
         self.s.sendto(message, (self.ip, self.port))
         self.sequence_number += 1
-        #self.send_bytes(message)
+        print(message)
 
     def reset_sequence_number(self):
         message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
@@ -58,7 +58,87 @@ class Camera:
 
     def info_display_off(self):
         self.send('81 01 7E 01 18 03 FF')
+
+    def pantilt(self, direction, pan_speed, tilt_speed):
+        try:
+            if 1 <= pan_speed <= 15:
+                pan_speed_hex = '0'+str(hex(pan_speed)[2:])
+            if 16 <= pan_speed <= 24:
+                pan_speed_hex = str(hex(pan_speed)[2:])
+            else:
+                pan_speed_hex = '00'
+        except:
+            pan_speed_hex = '00'
+        try:
+            if 1 <= tilt_speed <= 15:
+                tilt_speed_hex = '0'+str(hex(pan_speed)[2:])
+            if 16 <= tilt_speed <= 23:
+                tilt_speed_hex = str(hex(pan_speed)[2:])
+            else:
+                tilt_speed_hex = '00'
+        except:
+            tilt_speed_hex = '00'
+        if direction == 'up':
+            message = '81 01 06 01 VV WW 03 01 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
+        if direction == 'down':
+            message = '81 01 06 01 VV WW 03 02 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
+        if direction == 'left':
+            message = '81 01 06 01 VV WW 01 03 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
+        if direction == 'right':
+            message = '81 01 06 01 VV WW 02 01 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
+        if direction == 'upleft':
+            message = '81 01 06 01 VV WW 01 01 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
+        if direction == 'upright':
+            message = '81 01 06 01 VV WW 02 01 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
+        if direction == 'downleft':
+            message = '81 01 06 01 VV WW 01 02 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
+        if direction == 'downright':
+            message = '81 01 06 01 VV WW 02 02 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
+        if direction == 'stop':
+            message = '81 01 06 01 VV WW 03 03 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
+        self.send(message)
+
+    def pantilt_stop(self):
+        self.send('81 01 06 01 00 00 03 03 FF')
+
+    def pantilt_home(self):
+        self.send('81 01 06 04 FF')
     
+    def pantilt_reset(self):
+        self.send('81 01 06 05 FF')
+    '''
+    def pantilt_absolute(self, pan_angle, tilt_angle, pan_speed, tilt_speed): # Pan Position 56832 (DE00) to 8704 (2200) (CENTER 0000)
+        try:
+            if 1 <= pan_speed <= 15:
+                pan_speed_hex = '0'+str(hex(pan_speed)[2:])
+            if 16 <= pan_speed <= 24:
+                pan_speed_hex = str(hex(pan_speed)[2:])
+        except:
+            pan_speed_hex = '00'
+        try:
+            if 1 <= tilt_speed <= 15:
+                tilt_speed_hex = '0'+str(hex(pan_speed)[2:])
+            if 16 <= tilt_speed <= 23:
+                tilt_speed_hex = str(hex(pan_speed)[2:])
+        except:
+            tilt_speed_hex = '00'
+        if pan_angle < 0:
+            pan_direction = 'F'
+        else:
+            pan_direction = '0'
+        if tilt_angle < 0:
+            tilt_direction = 'F'
+        else:
+            tilt_direction = '0'
+        
+        # YYYY: Pan Position DE00 to 2200 (CENTER 0000)
+        # ZZZZ: Tilt Position FC00 to 1200 (CENTER 0000)
+        #YYYY = '0000'
+        #ZZZZ = '0000'
+        #pan_absolute_position = '81 01 06 02 VV WW 0Y 0Y 0Y 0Y 0Z 0Z 0Z 0Z FF'.replace('VV', str(VV)) #YYYY[0]
+        #pan_relative_position = '81 01 06 03 VV WW 0Y 0Y 0Y 0Y 0Z 0Z 0Z 0Z FF'.replace('VV', str(VV))
+    #'''
+
     #def set_pan_tilt_speed(self, pan_speed, tilt_speed):
     #    if pan_speed > 0 and pan_speed < 19:
     #        self.pan_speed = pan_speed
