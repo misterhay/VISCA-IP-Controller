@@ -102,7 +102,7 @@ class Camera:
     
     def pan_reset(self):
         self.send('81 01 06 05 FF')
-    
+    '''
     def pan_absolute(self, pan_angle, tilt_angle, pan_speed, tilt_speed): # Pan Position 56832 (DE00) to 8704 (2200) (CENTER 0000)
         try:
             if 1 <= pan_speed <= 15:
@@ -118,12 +118,22 @@ class Camera:
                 tilt_speed_hex = str(hex(pan_speed)[2:])
         except:
             tilt_speed_hex = '00'
+        if pan_angle < 0:
+            pan_direction = 'F'
+        else:
+            pan_direction = '0'
+        if tilt_angle < 0:
+            tilt_direction = 'F'
+        else:
+            tilt_direction = '0'
+        
         # YYYY: Pan Position DE00 to 2200 (CENTER 0000)
         # ZZZZ: Tilt Position FC00 to 1200 (CENTER 0000)
         #YYYY = '0000'
         #ZZZZ = '0000'
         #pan_absolute_position = '81 01 06 02 VV WW 0Y 0Y 0Y 0Y 0Z 0Z 0Z 0Z FF'.replace('VV', str(VV)) #YYYY[0]
         #pan_relative_position = '81 01 06 03 VV WW 0Y 0Y 0Y 0Y 0Z 0Z 0Z 0Z FF'.replace('VV', str(VV))
+    #'''
 
     #def set_pan_tilt_speed(self, pan_speed, tilt_speed):
     #    if pan_speed > 0 and pan_speed < 19:
