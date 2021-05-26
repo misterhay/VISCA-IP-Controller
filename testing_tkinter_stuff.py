@@ -1,10 +1,10 @@
 print('-------')
 
-from camera import *
-print(camera_on)
+#from camera import *
+#print(camera_on)
 
 import camera as c
-print(c.camera_on)
+#print(c.camera_on)
 
 from tkinter import Tk, StringVar, Button, Label, Entry, W
 
