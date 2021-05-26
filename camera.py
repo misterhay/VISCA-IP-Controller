@@ -59,7 +59,7 @@ class Camera:
     def info_display_off(self):
         self.send('81 01 7E 01 18 03 FF')
 
-    def pan(self, direction, pan_speed, tilt_speed):
+    def pantilt(self, direction, pan_speed, tilt_speed):
         try:
             if 1 <= pan_speed <= 15:
                 pan_speed_hex = '0'+str(hex(pan_speed)[2:])
@@ -94,16 +94,16 @@ class Camera:
             message = '81 01 06 01 VV WW 03 03 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
         self.send(message)
 
-    def pan_stop(self):
+    def pantilt_stop(self):
         self.send('81 01 06 01 00 00 03 03 FF')
 
-    def pan_home(self):
+    def pantilt_home(self):
         self.send('81 01 06 04 FF')
     
-    def pan_reset(self):
+    def pantilt_reset(self):
         self.send('81 01 06 05 FF')
     '''
-    def pan_absolute(self, pan_angle, tilt_angle, pan_speed, tilt_speed): # Pan Position 56832 (DE00) to 8704 (2200) (CENTER 0000)
+    def pantilt_absolute(self, pan_angle, tilt_angle, pan_speed, tilt_speed): # Pan Position 56832 (DE00) to 8704 (2200) (CENTER 0000)
         try:
             if 1 <= pan_speed <= 15:
                 pan_speed_hex = '0'+str(hex(pan_speed)[2:])
