@@ -131,6 +131,16 @@ def send_message(message_string):
     #'''
     return received_message
 
+#def pan(direction):
+def pan():
+    pan_speed = hex(pan_speed_slider.get())[2:]
+    tilt_speed = hex(tilt_speed_slider.get())[2:]
+    if len(pan_speed) == 1:
+        pan_speed = '0'+pan_speed
+    if len(tilt_speed) == 1:
+        tilt_speed = '0'+tilt_speed
+    print(len(pan_speed), pan_speed, len(tilt_speed), tilt_speed)
+
 def save_preset_labels():
     with open('preset_labels.txt', 'w') as f:
         for entry in entry_boxes:
@@ -246,12 +256,13 @@ Button(root, text='■', width=3, bg=pan_tilt_color, command=lambda: send_messag
 # Pan speed and Tilt speed
 Label(root, text='Pan Speed', bg=pan_tilt_color).grid(row=pan_tilt_row+3, column=pan_tilt_column)
 pan_speed_slider = Scale(root, from_=24, to=0, bg=pan_tilt_color)
-pan_speed_slider.set(7)
+pan_speed_slider.set(5)
 pan_speed_slider.grid(row=pan_tilt_row+4, column=pan_tilt_column)
 Label(root, text='Tilt Speed', bg=pan_tilt_color).grid(row=pan_tilt_row+3, column=pan_tilt_column+1)
 tilt_speed_slider = Scale(root, from_=24, to=0, bg=pan_tilt_color)
-tilt_speed_slider.set(7)
+tilt_speed_slider.set(5)
 tilt_speed_slider.grid(row=pan_tilt_row+4, column=pan_tilt_column+1)
+#Button(root, text='test pan speed', command=lambda: pan()).grid(row=pan_tilt_row+5, column=pan_tilt_column+1)
 
 # slider to set speed for pan_speed and tilt_speed (0x01 to 0x17)
 # still not quite sure about this...
