@@ -72,7 +72,7 @@ class Camera:
         try:
             if 1 <= tilt_speed <= 15:
                 tilt_speed_hex = '0'+str(hex(pan_speed)[2:])
-            if 16 <= tilt_speed <= 23:
+            if 16 <= tilt_speed <= 24:
                 tilt_speed_hex = str(hex(pan_speed)[2:])
             else:
                 tilt_speed_hex = '00'
