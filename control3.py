@@ -4,6 +4,13 @@ from camera import *
 c = Camera('192.168.0.100', 52381)
 c.reset_sequence_number()
 
+def save_preset_labels():
+    with open('preset_labels.txt', 'w') as f:
+        for entry in entry_boxes:
+            f.write(entry.get())
+            f.write('\n')
+    f.close()
+
 # GUI
 from tkinter import Tk, StringVar, Button, Label, Scale, Entry, W
 root = Tk()
@@ -18,7 +25,7 @@ recall_column = 2
 pan_tilt_column = 5
 pan_tilt_row = 1
 zoom_column = 3
-zoom_row = 4
+zoom_row = 7
 
 focus_column = 3
 focus_row = 8
@@ -84,17 +91,17 @@ for e in range(16):
         pass
     box.grid(row=e+2, column=label_column)
     entry_boxes.append(box)
-Button(root, text='Save preset labels', bg=store_color, command=c.save_preset_labels()).grid(row=18, column=label_column)
+Button(root, text='Save preset labels', bg=store_color, command=save_preset_labels()).grid(row=18, column=label_column)
 
 # Pan speed and Tilt speed sliders
 Label(root, text='Pan Speed', bg=pan_tilt_color).grid(row=pan_tilt_row+3, column=pan_tilt_column)
 pan_speed_slider = Scale(root, from_=24, to=0, bg=pan_tilt_color)
-pan_speed_slider.set(5)
-pan_speed_slider.grid(row=pan_tilt_row+4, column=pan_tilt_column)
+pan_speed_slider.set(7)
+pan_speed_slider.grid(row=pan_tilt_row+4, column=pan_tilt_column, rowspan=4)
 Label(root, text='Tilt Speed', bg=pan_tilt_color).grid(row=pan_tilt_row+3, column=pan_tilt_column+1)
 tilt_speed_slider = Scale(root, from_=24, to=0, bg=pan_tilt_color)
-tilt_speed_slider.set(5)
-tilt_speed_slider.grid(row=pan_tilt_row+4, column=pan_tilt_column+1)
+tilt_speed_slider.set(7)
+tilt_speed_slider.grid(row=pan_tilt_row+4, column=pan_tilt_column+1, rowspan=4)
 
 # Pan and tilt buttons
 Button(root, text='↑', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('up', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row, column=pan_tilt_column+1)
@@ -110,20 +117,17 @@ Button(root, text='■', width=3, bg=pan_tilt_color, command=lambda: c.pantilt_s
 
 # Zoom buttons
 Label(root, text='Zoom', bg=zoom_color, width=button_width).grid(row=zoom_row, column=zoom_column)
-Button(root, text='In', bg=zoom_color, width=button_width, command=lambda: send_message(zoom_tele)).grid(row=zoom_row+1, column=zoom_column)
-Button(root, text='Stop', bg=zoom_color, width=button_width, command=lambda: send_message(zoom_stop)).grid(row=zoom_row+2, column=zoom_column)
-Button(root, text='Out', bg=zoom_color, width=button_width, command=lambda: send_message(zoom_wide)).grid(row=zoom_row+3, column=zoom_column)
-# Focus buttons
-Label(root, text='Focus', width=button_width, bg=focus_color).grid(row=focus_row, column=focus_column)
-Button(root, text='Near', width=button_width, bg=focus_color, command=lambda: send_message(focus_near)).grid(row=focus_row+1, column=focus_column)
-Button(root, text='Far', width=button_width, bg=focus_color, command=lambda: send_message(focus_far)).grid(row=focus_row+2, column=focus_column)
+
+Button(root, text='In', bg=zoom_color, width=button_width, command=c.zoom_in()).grid(row=zoom_row+1, column=zoom_column)
+Button(root, text='Stop', bg=zoom_color, width=button_width, command=c.zoom_stop()).grid(row=zoom_row+2, column=zoom_column)
+Button(root, text='Out', bg=zoom_color, width=button_width, command=c.zoom_out()).grid(row=zoom_row+3, column=zoom_column)
 
 # On off connect buttons
 Label(root, text='Camera', bg=on_off_color, width=button_width).grid(row=on_off_row, column=on_off_column)
-Button(root, text='On', bg=on_off_color, width=button_width, command=lambda: send_message(camera_on)).grid(row=on_off_row+1, column=on_off_column)
-Button(root, text='Connect', bg=on_off_color, width=button_width, command=reset_sequence_number_function()).grid(row=on_off_row+2, column=on_off_column)
-Button(root, text='Off', bg=on_off_color, width=button_width, command=lambda: send_message(camera_off)).grid(row=on_off_row+3, column=on_off_column)
-Button(root, text='Info Off', bg=on_off_color, width=button_width, command=lambda: send_message(information_display_off)).grid(row=on_off_row+4, column=on_off_column)
+Button(root, text='On', bg=on_off_color, width=button_width, command=c.on()).grid(row=on_off_row+1, column=on_off_column)
+Button(root, text='Connect', bg=on_off_color, width=button_width, command=c.reset_sequence_number()).grid(row=on_off_row+2, column=on_off_column)
+Button(root, text='Off', bg=on_off_color, width=button_width, command=c.off()).grid(row=on_off_row+3, column=on_off_column)
+Button(root, text='Info Off', bg=on_off_color, width=button_width, command=c.info_display_off()).grid(row=on_off_row+4, column=on_off_column)
 
 # IP Label
 #Label(root, text=camera_ip+':'+str(camera_port)).grid(row=6, column=0, columnspan=3)
