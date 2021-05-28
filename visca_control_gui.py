@@ -257,11 +257,11 @@ Button(root, text='■', width=3, bg=pan_tilt_color, command=lambda: send_messag
 Label(root, text='Pan Speed', bg=pan_tilt_color).grid(row=pan_tilt_row+3, column=pan_tilt_column)
 pan_speed_slider = Scale(root, from_=24, to=0, bg=pan_tilt_color)
 pan_speed_slider.set(5)
-pan_speed_slider.grid(row=pan_tilt_row+4, column=pan_tilt_column)
+pan_speed_slider.grid(row=pan_tilt_row+4, column=pan_tilt_column, rowspan=4)
 Label(root, text='Tilt Speed', bg=pan_tilt_color).grid(row=pan_tilt_row+3, column=pan_tilt_column+1)
 tilt_speed_slider = Scale(root, from_=24, to=0, bg=pan_tilt_color)
 tilt_speed_slider.set(5)
-tilt_speed_slider.grid(row=pan_tilt_row+4, column=pan_tilt_column+1)
+tilt_speed_slider.grid(row=pan_tilt_row+4, column=pan_tilt_column+1, rowspan=4)
 #Button(root, text='test pan speed', command=lambda: pan()).grid(row=pan_tilt_row+5, column=pan_tilt_column+1)
 
 # slider to set speed for pan_speed and tilt_speed (0x01 to 0x17)
@@ -274,9 +274,9 @@ Button(root, text='In', bg=zoom_color, width=button_width, command=lambda: send_
 Button(root, text='Stop', bg=zoom_color, width=button_width, command=lambda: send_message(zoom_stop)).grid(row=zoom_row+2, column=zoom_column)
 Button(root, text='Out', bg=zoom_color, width=button_width, command=lambda: send_message(zoom_wide)).grid(row=zoom_row+3, column=zoom_column)
 # Focus buttons
-Label(root, text='Focus', width=button_width, bg=focus_color).grid(row=focus_row, column=focus_column)
-Button(root, text='Near', width=button_width, bg=focus_color, command=lambda: send_message(focus_near)).grid(row=focus_row+1, column=focus_column)
-Button(root, text='Far', width=button_width, bg=focus_color, command=lambda: send_message(focus_far)).grid(row=focus_row+2, column=focus_column)
+#Label(root, text='Focus', width=button_width, bg=focus_color).grid(row=focus_row, column=focus_column)
+#Button(root, text='Near', width=button_width, bg=focus_color, command=lambda: send_message(focus_near)).grid(row=focus_row+1, column=focus_column)
+#Button(root, text='Far', width=button_width, bg=focus_color, command=lambda: send_message(focus_far)).grid(row=focus_row+2, column=focus_column)
 
 # On off connect buttons
 Label(root, text='Camera', bg=on_off_color, width=button_width).grid(row=on_off_row, column=on_off_column)
