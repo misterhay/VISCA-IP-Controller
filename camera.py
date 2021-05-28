@@ -270,10 +270,3 @@ class Camera:
     def memory_reset(self, memory_number):
         memory_hex = str(hex(memory_number)[2:])
         self.send('81 01 04 3F 00 0'+memory_hex+' FF')
-    
-    def save_preset_labels(self):
-        with open('preset_labels.txt', 'w') as f:
-            for entry in self.entry_boxes:
-                f.write(entry.get())
-                f.write('\n')
-        f.close()
