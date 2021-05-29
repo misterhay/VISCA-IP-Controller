@@ -25,12 +25,11 @@ recall_column = 2
 pan_tilt_column = 5
 pan_tilt_row = 1
 zoom_column = 3
-zoom_row = 7
-
+zoom_row = 1
 focus_column = 3
 focus_row = 8
 on_off_column = 3
-on_off_row = 11
+on_off_row = 13
 button_width = 8
 store_color = 'red'
 recall_color = 'light grey'
@@ -91,33 +90,32 @@ for e in range(16):
         pass
     box.grid(row=e+2, column=label_column)
     entry_boxes.append(box)
-Button(root, text='Save preset labels', bg=store_color, command=save_preset_labels()).grid(row=18, column=label_column)
+Button(root, text='Save preset labels', bg=store_color, command=save_preset_labels()).grid(row=1, column=label_column)
 
 # Pan speed and Tilt speed sliders
-Label(root, text='Pan Speed', bg=pan_tilt_color).grid(row=pan_tilt_row+3, column=pan_tilt_column)
+Label(root, text='Pan Speed', bg=pan_tilt_color).grid(row=pan_tilt_row, column=pan_tilt_column)
 pan_speed_slider = Scale(root, from_=24, to=0, bg=pan_tilt_color)
 pan_speed_slider.set(7)
-pan_speed_slider.grid(row=pan_tilt_row+4, column=pan_tilt_column, rowspan=4)
-Label(root, text='Tilt Speed', bg=pan_tilt_color).grid(row=pan_tilt_row+3, column=pan_tilt_column+1)
+pan_speed_slider.grid(row=pan_tilt_row+1, column=pan_tilt_column, rowspan=4)
+Label(root, text='Tilt Speed', bg=pan_tilt_color).grid(row=pan_tilt_row, column=pan_tilt_column+1)
 tilt_speed_slider = Scale(root, from_=24, to=0, bg=pan_tilt_color)
 tilt_speed_slider.set(7)
-tilt_speed_slider.grid(row=pan_tilt_row+4, column=pan_tilt_column+1, rowspan=4)
+tilt_speed_slider.grid(row=pan_tilt_row+1, column=pan_tilt_column+1, rowspan=4)
 
 # Pan and tilt buttons
-Button(root, text='↑', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('up', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row, column=pan_tilt_column+1)
-Button(root, text='←', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('left', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row+1, column=pan_tilt_column)
-Button(root, text='→', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('right', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row+1, column=pan_tilt_column+2)
-Button(root, text='↓', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('down', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row+2, column=pan_tilt_column+1)
-Button(root, text='↖', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('upleft', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row, column=pan_tilt_column)
-Button(root, text='↗', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('upright', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row, column=pan_tilt_column+2)
-Button(root, text='↙', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('downleft', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row+2, column=pan_tilt_column)
-Button(root, text='↘', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('downright', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row+2, column=pan_tilt_column+2)
-Button(root, text='■', width=3, bg=pan_tilt_color, command=lambda: c.pantilt_stop()).grid(row=pan_tilt_row+1, column=pan_tilt_column+1)
+Button(root, text='↑', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('up', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row, column=pan_tilt_column+3)
+Button(root, text='←', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('left', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row+1, column=pan_tilt_column+2)
+Button(root, text='→', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('right', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row+1, column=pan_tilt_column+4)
+Button(root, text='↓', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('down', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row+2, column=pan_tilt_column+3)
+Button(root, text='↖', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('upleft', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row, column=pan_tilt_column+2)
+Button(root, text='↗', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('upright', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row, column=pan_tilt_column+4)
+Button(root, text='↙', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('downleft', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row+2, column=pan_tilt_column+2)
+Button(root, text='↘', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('downright', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row+2, column=pan_tilt_column+4)
+Button(root, text='■', width=3, bg=pan_tilt_color, command=lambda: c.pantilt_stop()).grid(row=pan_tilt_row+1, column=pan_tilt_column+3)
 #Button(root, text='Home', command=lambda: send_message(pan_home)).grid(row=pan_tilt_row+2, column=pan_tilt_column+1)
 
 # Zoom buttons
 Label(root, text='Zoom', bg=zoom_color, width=button_width).grid(row=zoom_row, column=zoom_column)
-
 Button(root, text='In', bg=zoom_color, width=button_width, command=c.zoom_in()).grid(row=zoom_row+1, column=zoom_column)
 Button(root, text='Stop', bg=zoom_color, width=button_width, command=c.zoom_stop()).grid(row=zoom_row+2, column=zoom_column)
 Button(root, text='Out', bg=zoom_color, width=button_width, command=c.zoom_out()).grid(row=zoom_row+3, column=zoom_column)
