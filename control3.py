@@ -2,7 +2,6 @@
 
 from camera import *
 c = Camera('192.168.0.100', 52381)
-c.reset_sequence_number()
 
 def save_preset_labels():
     with open('preset_labels.txt', 'w') as f:
