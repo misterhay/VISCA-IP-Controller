@@ -4,8 +4,6 @@ from camera import *
 c = Camera('192.168.0.100', 52381)
 
 def save_preset_labels():
-    print('this was run')
-    '''
     with open('preset_labels2.txt', 'w') as f:
         for entry in entry_boxes:
 
@@ -14,7 +12,6 @@ def save_preset_labels():
             f.write(entry.get())
             f.write('\n')
     f.close()
-    #'''
 
 # GUI
 from tkinter import Tk, StringVar, Button, Label, Scale, Entry, W
