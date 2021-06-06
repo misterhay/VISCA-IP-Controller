@@ -1,9 +1,8 @@
 print('-------')
 
-#from camera import *
-#print(camera_on)
+from camera import *
+c = Camera('192.168.0.100', 52381)
 
-import camera as c
 #print(c.camera_on)
 
 from tkinter import Tk, StringVar, Button, Label, Entry, W
