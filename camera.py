@@ -5,9 +5,6 @@ class Camera:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     sequence_number = 1
-    #pan_speed = 7 # 0x01 to 0x18
-    #tilt_speed = 7 # 0x01 to 0x17
-    #zoom_speed = 7 # 0 to 7
 
     # for receiving
     #buffer_size = 1024
@@ -34,13 +31,14 @@ class Camera:
 
     def send(self, message):
         #message_bytes = ''  # translate message to bytes
+        #print(self.sequence_number)
         payload_type = bytearray.fromhex('01 00')
         payload = bytearray.fromhex(message)
         payload_length = len(payload).to_bytes(2, 'big')
         message = payload_type + payload_length + self.sequence_number.to_bytes(4, 'big') + payload
         self.s.sendto(message, (self.ip, self.port))
         self.sequence_number += 1
-        print(message)
+        #print(message)
 
     def reset_sequence_number(self):
         message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
