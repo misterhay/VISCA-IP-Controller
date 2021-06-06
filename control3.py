@@ -106,6 +106,7 @@ Label(root, text='Tilt Speed', bg=pan_tilt_color).grid(row=pan_tilt_row, column=
 tilt_speed_slider = Scale(root, from_=24, to=0, bg=pan_tilt_color)
 tilt_speed_slider.set(7)
 tilt_speed_slider.grid(row=pan_tilt_row+1, column=pan_tilt_column+1, rowspan=4)
+#Button(root, text='test', command=lambda: print(pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=0,column=0)
 
 # Pan and tilt buttons
 Button(root, text='↑', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('up', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row, column=pan_tilt_column+3)

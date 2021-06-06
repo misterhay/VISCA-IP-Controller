@@ -59,19 +59,19 @@ class Camera:
 
     def pantilt(self, direction, pan_speed, tilt_speed):
         try:
-            if 1 <= pan_speed <= 15:
-                pan_speed_hex = '0'+str(hex(pan_speed)[2:])
-            if 16 <= pan_speed <= 24:
+            if 1 <= pan_speed <= 24:
                 pan_speed_hex = str(hex(pan_speed)[2:])
             else:
                 pan_speed_hex = '00'
+            if len(pan_speed_hex) == 1:
+                pan_speed_hex = '0'+pan_speed_hex
         except:
             pan_speed_hex = '00'
         try:
             if 1 <= tilt_speed <= 15:
-                tilt_speed_hex = '0'+str(hex(pan_speed)[2:])
-            if 16 <= tilt_speed <= 24:
-                tilt_speed_hex = str(hex(pan_speed)[2:])
+                tilt_speed_hex = '0'+str(hex(tilt_speed)[2:])
+            elif 16 <= tilt_speed <= 24:
+                tilt_speed_hex = str(hex(tilt_speed)[2:])
             else:
                 tilt_speed_hex = '00'
         except:
