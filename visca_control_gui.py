@@ -254,6 +254,7 @@ Button(root, text='■', width=3, bg=pan_tilt_color, command=lambda: send_messag
 #Button(root, text='Home', command=lambda: send_message(pan_home)).grid(row=pan_tilt_row+2, column=pan_tilt_column+1)
 
 # Pan speed and Tilt speed
+'''
 Label(root, text='Pan Speed', bg=pan_tilt_color).grid(row=pan_tilt_row+3, column=pan_tilt_column)
 pan_speed_slider = Scale(root, from_=24, to=0, bg=pan_tilt_color)
 pan_speed_slider.set(5)
@@ -267,6 +268,7 @@ tilt_speed_slider.grid(row=pan_tilt_row+4, column=pan_tilt_column+1, rowspan=4)
 # slider to set speed for pan_speed and tilt_speed (0x01 to 0x17)
 # still not quite sure about this...
 #Scale(root, from_=0, to=17, variable=movement_speed, orient=HORIZONTAL, label='Speed').grid(row=5, column=2, columnspan=3)
+#'''
 
 # Zoom buttons
 Label(root, text='Zoom', bg=zoom_color, width=button_width).grid(row=zoom_row, column=zoom_column)
