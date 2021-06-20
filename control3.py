@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # sudo apt install python3-tk
 
 from camera import *
