@@ -83,7 +83,7 @@ class Camera:
         if direction == 'left':
             message = '81 01 06 01 VV WW 01 03 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
         if direction == 'right':
-            message = '81 01 06 01 VV WW 02 01 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
+            message = '81 01 06 01 VV WW 02 03 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
         if direction == 'upleft':
             message = '81 01 06 01 VV WW 01 01 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
         if direction == 'upright':
