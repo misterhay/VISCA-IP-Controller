@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # https://pro.sony/s3/2019/01/16020225/AES6100121.pdf
 # https://gitlab.viarezo.fr/2018corona/viscaoverip/blob/master/camera2.py
 # sudo apt install python3-tk
