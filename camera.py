@@ -253,7 +253,7 @@ class Camera:
         else:
             self.send('81 01 04 58 02 FF')
 
-    def recall(self, memory_number):
+    def memory_recall(self, memory_number):
         self.info_display_off() # otherwise we see a message on the camera output
         self.sleep(0.25)
         memory_hex = str(hex(memory_number)[2:])
