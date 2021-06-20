@@ -1,5 +1,5 @@
-full
 wide
+full
 three-quarter
 medium
 close
