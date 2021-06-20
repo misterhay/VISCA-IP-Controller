@@ -6,9 +6,6 @@ c = Camera('192.168.0.100', 52381)
 def save_preset_labels():
     with open('preset_labels.txt', 'w') as f:
         for entry in entry_boxes:
-
-            print(entry.get())
-            
             f.write(entry.get())
             f.write('\n')
     f.close()
