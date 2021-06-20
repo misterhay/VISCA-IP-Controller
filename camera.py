@@ -261,9 +261,9 @@ class Camera:
         self.sleep(1)
         self.info_display_off() # to make sure it doesn't display "done"
 
-    def memory_set(self, memory_number):
+    def memory_set(self, memory_number): # 8x 01 04 3F 01 0p FF
         memory_hex = hex(memory_number)[-1]
-        self.send('81 01 04 3F 02 0p FF'.replace('p', memory_hex))
+        self.send('81 01 04 3F 01 0p FF'.replace('p', memory_hex))
     
     def memory_reset(self, memory_number):
         memory_hex = str(hex(memory_number)[2:])
