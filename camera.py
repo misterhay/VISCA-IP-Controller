@@ -267,15 +267,28 @@ class Camera:
         memory_hex = str(hex(memory_number)[2:])
         self.send('81 01 04 3F 00 0'+memory_hex+' FF')
 
-    def inquiry(self):
-        self.send('81 09 ')
 
+    def inquiry_zoom_position(self):
+        self.send('81 09 04 47 FF')
+    
+    def inquiry_focus_position(self):
+        self.send('81 09 04 48 FF')
+
+    def inquiry_pantilt_position(self):
+        self.send('81 09 06 12 FF')
 
 '''
 ## Messages from Camera
+90 50 FF      Interface cleared
 90 4y FF      Acknowledge
 90 5y FF      Complete
 90 5Y ... FF  Inquiry Response
+y = socket number
+
+## Inquiry Responses
+y0 50 0p 0q 0r 0s FF  Zoom or Focus Position
+y0 50 0w 0w 0w 0w 0z 0z 0z 0z FF  wwww = Pan Position, zzzz = Tilt Position
+y = socket number
 
 ## Errors
 90 6y 01 FF  Message length error
@@ -284,6 +297,6 @@ class Camera:
 90 6y 04 FF  Command canceled
 90 6y 05 FF  No socket (to be canceled)
 90 6y 41 FF  Command not executable
-
 y = socket number
+
 '''
