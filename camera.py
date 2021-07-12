@@ -5,9 +5,6 @@ class Camera:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     sequence_number = 1
-    #pan_speed = 7 # 0x01 to 0x18
-    #tilt_speed = 7 # 0x01 to 0x17
-    #zoom_speed = 7 # 0 to 7
 
     # for receiving
     #buffer_size = 1024
@@ -34,13 +31,14 @@ class Camera:
 
     def send(self, message):
         #message_bytes = ''  # translate message to bytes
+        #print(self.sequence_number)
         payload_type = bytearray.fromhex('01 00')
         payload = bytearray.fromhex(message)
         payload_length = len(payload).to_bytes(2, 'big')
         message = payload_type + payload_length + self.sequence_number.to_bytes(4, 'big') + payload
         self.s.sendto(message, (self.ip, self.port))
         self.sequence_number += 1
-        print(message)
+        #print(message)
 
     def reset_sequence_number(self):
         message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
@@ -61,19 +59,19 @@ class Camera:
 
     def pantilt(self, direction, pan_speed, tilt_speed):
         try:
-            if 1 <= pan_speed <= 15:
-                pan_speed_hex = '0'+str(hex(pan_speed)[2:])
-            if 16 <= pan_speed <= 24:
+            if 1 <= pan_speed <= 24:
                 pan_speed_hex = str(hex(pan_speed)[2:])
             else:
                 pan_speed_hex = '00'
+            if len(pan_speed_hex) == 1:
+                pan_speed_hex = '0'+pan_speed_hex
         except:
             pan_speed_hex = '00'
         try:
             if 1 <= tilt_speed <= 15:
-                tilt_speed_hex = '0'+str(hex(pan_speed)[2:])
-            if 16 <= tilt_speed <= 24:
-                tilt_speed_hex = str(hex(pan_speed)[2:])
+                tilt_speed_hex = '0'+str(hex(tilt_speed)[2:])
+            elif 16 <= tilt_speed <= 24:
+                tilt_speed_hex = str(hex(tilt_speed)[2:])
             else:
                 tilt_speed_hex = '00'
         except:
@@ -85,7 +83,7 @@ class Camera:
         if direction == 'left':
             message = '81 01 06 01 VV WW 01 03 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
         if direction == 'right':
-            message = '81 01 06 01 VV WW 02 01 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
+            message = '81 01 06 01 VV WW 02 03 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
         if direction == 'upleft':
             message = '81 01 06 01 VV WW 01 01 FF'.replace('VV', pan_speed_hex).replace('WW', tilt_speed_hex)
         if direction == 'upright':
@@ -255,7 +253,7 @@ class Camera:
         else:
             self.send('81 01 04 58 02 FF')
 
-    def recall(self, memory_number):
+    def memory_recall(self, memory_number):
         self.info_display_off() # otherwise we see a message on the camera output
         self.sleep(0.25)
         memory_hex = str(hex(memory_number)[2:])
@@ -263,9 +261,9 @@ class Camera:
         self.sleep(1)
         self.info_display_off() # to make sure it doesn't display "done"
 
-    def memory_set(self, memory_number):
+    def memory_set(self, memory_number): # 8x 01 04 3F 01 0p FF
         memory_hex = hex(memory_number)[-1]
-        self.send('81 01 04 3F 02 0p FF'.replace('p', memory_hex))
+        self.send('81 01 04 3F 01 0p FF'.replace('p', memory_hex))
     
     def memory_reset(self, memory_number):
         memory_hex = str(hex(memory_number)[2:])

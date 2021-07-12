@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # sudo apt install python3-tk
 
 from camera import *
@@ -75,7 +76,7 @@ Button(root, text='D', width=5, bg=recall_color, command=lambda: c.memory_recall
 Button(root, text='E', width=5, bg=recall_color, command=lambda: c.memory_recall(14)).grid(row=16, column=recall_column)
 Button(root, text='F', width=5, bg=recall_color, command=lambda: c.memory_recall(15)).grid(row=17, column=recall_column)
 try:
-    with open('preset_labels.txt') as f:
+    with open('preset_labels.txt', 'r') as f:
         labels = f.read().splitlines()
     f.close()
 except:
@@ -89,7 +90,7 @@ for e in range(16):
         pass
     box.grid(row=e+2, column=label_column)
     entry_boxes.append(box)
-Button(root, text='Save preset labels', bg=store_color, command=save_preset_labels()).grid(row=1, column=label_column)
+Button(root, text='Save preset labels', bg=store_color, command=lambda: save_preset_labels()).grid(row=1, column=label_column)
 
 # Pan speed and Tilt speed sliders
 Label(root, text='Pan Speed', bg=pan_tilt_color).grid(row=pan_tilt_row, column=pan_tilt_column)
@@ -100,6 +101,7 @@ Label(root, text='Tilt Speed', bg=pan_tilt_color).grid(row=pan_tilt_row, column=
 tilt_speed_slider = Scale(root, from_=24, to=0, bg=pan_tilt_color)
 tilt_speed_slider.set(7)
 tilt_speed_slider.grid(row=pan_tilt_row+1, column=pan_tilt_column+1, rowspan=4)
+#Button(root, text='test', command=lambda: print(pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=0,column=0)
 
 # Pan and tilt buttons
 Button(root, text='↑', width=3, bg=pan_tilt_color, command=lambda: c.pantilt('up', pan_speed_slider.get(), tilt_speed_slider.get())).grid(row=pan_tilt_row, column=pan_tilt_column+3)
@@ -115,16 +117,16 @@ Button(root, text='■', width=3, bg=pan_tilt_color, command=lambda: c.pantilt_s
 
 # Zoom buttons
 Label(root, text='Zoom', bg=zoom_color, width=button_width).grid(row=zoom_row, column=zoom_column)
-Button(root, text='In', bg=zoom_color, width=button_width, command=c.zoom_in()).grid(row=zoom_row+1, column=zoom_column)
-Button(root, text='Stop', bg=zoom_color, width=button_width, command=c.zoom_stop()).grid(row=zoom_row+2, column=zoom_column)
-Button(root, text='Out', bg=zoom_color, width=button_width, command=c.zoom_out()).grid(row=zoom_row+3, column=zoom_column)
+Button(root, text='In', bg=zoom_color, width=button_width, command=lambda: c.zoom_in()).grid(row=zoom_row+1, column=zoom_column)
+Button(root, text='Stop', bg=zoom_color, width=button_width, command=lambda: c.zoom_stop()).grid(row=zoom_row+2, column=zoom_column)
+Button(root, text='Out', bg=zoom_color, width=button_width, command=lambda: c.zoom_out()).grid(row=zoom_row+3, column=zoom_column)
 
 # On off connect buttons
 Label(root, text='Camera', bg=on_off_color, width=button_width).grid(row=on_off_row, column=on_off_column)
-Button(root, text='On', bg=on_off_color, width=button_width, command=c.on()).grid(row=on_off_row+1, column=on_off_column)
-Button(root, text='Connect', bg=on_off_color, width=button_width, command=c.reset_sequence_number()).grid(row=on_off_row+2, column=on_off_column)
-Button(root, text='Off', bg=on_off_color, width=button_width, command=c.off()).grid(row=on_off_row+3, column=on_off_column)
-Button(root, text='Info Off', bg=on_off_color, width=button_width, command=c.info_display_off()).grid(row=on_off_row+4, column=on_off_column)
+Button(root, text='On', bg=on_off_color, width=button_width, command=lambda: c.on()).grid(row=on_off_row+1, column=on_off_column)
+Button(root, text='Connect', bg=on_off_color, width=button_width, command=lambda: c.reset_sequence_number()).grid(row=on_off_row+2, column=on_off_column)
+Button(root, text='Off', bg=on_off_color, width=button_width, command=lambda: c.off()).grid(row=on_off_row+3, column=on_off_column)
+Button(root, text='Info Off', bg=on_off_color, width=button_width, command=lambda: c.info_display_off()).grid(row=on_off_row+4, column=on_off_column)
 
 # IP Label
 #Label(root, text=camera_ip+':'+str(camera_port)).grid(row=6, column=0, columnspan=3)
