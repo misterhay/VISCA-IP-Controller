@@ -1,10 +1,14 @@
-
 class Camera:
     from time import sleep
     import socket
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
+    
     sequence_number = 1
+
+    ## Messages:
+    ## 81 0q 0r ... FF
+    ## q = 1 for command, q = 9 for inquiry
+    ## r = 4 for camera, r = 6 for pan/tilt
 
     # for receiving
     #buffer_size = 1024
@@ -18,16 +22,6 @@ class Camera:
 
     def disconnect(self):
         self.s.close()
-
-    '''
-    def send_bytes(self, message_bytes):
-        payload_type = bytearray.fromhex('01 00')
-        payload = bytearray.fromhex(message_bytes)
-        payload_length = len(payload).to_bytes(2, 'big')
-        message = payload_type + payload_length + self.sequence_number.to_bytes(4, 'big') + payload
-        self.s.sendto(message, (self.ip, self.port))
-        #self.sequence_number += 1
-    #'''
 
     def send(self, message):
         #message_bytes = ''  # translate message to bytes
@@ -268,3 +262,24 @@ class Camera:
     def memory_reset(self, memory_number):
         memory_hex = str(hex(memory_number)[2:])
         self.send('81 01 04 3F 00 0'+memory_hex+' FF')
+
+    def inquiry(self):
+        self.send('81 09 ')
+
+
+'''
+## Messages from Camera
+90 4y FF      Acknowledge
+90 5y FF      Complete
+90 5Y ... FF  Inquiry Response
+
+## Errors
+90 6y 01 FF  Message length error
+90 60 02 FF  Syntax Error
+90 60 03 FF  Command buffer full
+90 6y 04 FF  Command canceled
+90 6y 05 FF  No socket (to be canceled)
+90 6y 41 FF  Command not executable
+
+y = socket number
+'''
