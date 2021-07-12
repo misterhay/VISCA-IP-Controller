@@ -2,6 +2,9 @@ class Camera:
     from time import sleep
     import socket
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # for receiving, prevent TIME_WAIT state
+    import binascii # for translating received messages
+
     
     sequence_number = 1
 
@@ -10,14 +13,10 @@ class Camera:
     ## q = 1 for command, q = 9 for inquiry
     ## r = 4 for camera, r = 6 for pan/tilt
 
-    # for receiving
-    #buffer_size = 1024
-    #s.bind(('', camera_port)) # use the port one higher than the camera's port
-    #s.settimeout(1) # only wait for a response for 1 second
-
     def __init__(self, ip, port):
         self.ip = ip
         self.port = port
+        self.s.bind('', port) # for receiving
         self.reset_sequence_number()
     
     def connect(self):
@@ -28,8 +27,6 @@ class Camera:
         self.s.close()
 
     def send(self, message):
-        #message_bytes = ''  # translate message to bytes
-        #print(self.sequence_number)
         payload_type = bytearray.fromhex('01 00')
         payload = bytearray.fromhex(message)
         payload_length = len(payload).to_bytes(2, 'big')
@@ -37,6 +34,8 @@ class Camera:
         self.s.sendto(message, (self.ip, self.port))
         self.sequence_number += 1
         #print(message)
+        data = self.s.recv(1024)
+        print(data)
 
     def reset_sequence_number(self):
         message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
@@ -266,7 +265,6 @@ class Camera:
     def memory_reset(self, memory_number):
         memory_hex = str(hex(memory_number)[2:])
         self.send('81 01 04 3F 00 0'+memory_hex+' FF')
-
 
     def inquiry_zoom_position(self):
         self.send('81 09 04 47 FF')
