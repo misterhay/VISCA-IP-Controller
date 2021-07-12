@@ -19,6 +19,10 @@ class Camera:
         self.ip = ip
         self.port = port
         self.reset_sequence_number()
+    
+    def connect(self):
+        self.send('81 01 00 01 FF') # clear the camera's interface socket
+        self.reset_sequence_number()
 
     def disconnect(self):
         self.s.close()

@@ -124,7 +124,7 @@ Button(root, text='Out', bg=zoom_color, width=button_width, command=lambda: c.zo
 # On off connect buttons
 Label(root, text='Camera', bg=on_off_color, width=button_width).grid(row=on_off_row, column=on_off_column)
 Button(root, text='On', bg=on_off_color, width=button_width, command=lambda: c.on()).grid(row=on_off_row+1, column=on_off_column)
-Button(root, text='Connect', bg=on_off_color, width=button_width, command=lambda: c.reset_sequence_number()).grid(row=on_off_row+2, column=on_off_column)
+Button(root, text='Connect', bg=on_off_color, width=button_width, command=lambda: c.connect()).grid(row=on_off_row+2, column=on_off_column)
 Button(root, text='Off', bg=on_off_color, width=button_width, command=lambda: c.off()).grid(row=on_off_row+3, column=on_off_column)
 Button(root, text='Info Off', bg=on_off_color, width=button_width, command=lambda: c.info_display_off()).grid(row=on_off_row+4, column=on_off_column)
 
