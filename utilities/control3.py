@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # sudo apt install python3-tk
 
-from camera import *
+from visca_over_ip.camera import *
 c = Camera('192.168.0.100', 52381)
 
 def save_preset_labels():
@@ -12,7 +12,8 @@ def save_preset_labels():
     f.close()
 
 # GUI
-from tkinter import Tk, StringVar, Button, Label, Scale, Entry, W
+from tkinter import Tk, Button, Label, Scale, Entry
+
 root = Tk()
 #display_message = StringVar()
 root.title('VISCA IP Camera Controller')
