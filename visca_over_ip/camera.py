@@ -8,19 +8,21 @@ class ViscaException(RuntimeError):
     pass
 
 
+ACK_RESPONSES = ['0f01', '9041ff']
+
+
 class Camera:
-    def __init__(self, ip, port=52381, sequence_number=1):
-        self.ip = ip
-        self.port = port
-        self.sequence_number = sequence_number
+    def __init__(self, ip, port=52381):
+        self._location = (ip, port)
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._sock.bind(('', port))
+        self._sock.settimeout(0.1)
 
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # for receiving, prevent TIME_WAIT state
-        self.sock.bind(('', port))  # for receiving
-
-        self._send_command('00 01')  # clear the camera's interface socket
+        self.num_timeouts = 0
+        self.sequence_number = 0
         self.reset_sequence_number()
-    
+        self._send_command('00 01')  # clear the camera's interface socket
+
     def _send_command(self, command_hex):
         payload_type = b'\x01\x00'
         preamble = b'\x81\x01'
@@ -32,19 +34,34 @@ class Camera:
 
         message = payload_type + payload_length + sequence_bytes + payload_bytes
 
-        self.sock.sendto(message, (self.ip, self.port))
-        self.sequence_number += 1
+        self._sock.sendto(message, self._location)
 
-        response = self.sock.recv(1024)
+        ack_response = None
+        completion_response = None
 
-        response_type = response[:2]
-        response_payload_len = int.from_bytes(response[2:4], 'big')
-        response_sequence_number = int.from_bytes(response[4:8], 'big')
-        response_payload = response[8: 8 + response_payload_len]  # TODO do something smart with this
+        while True:
+            try:
+                response = self._sock.recv(32)
+                response_sequence_number = int.from_bytes(response[4:8], 'big')
+
+                if response_sequence_number < self.sequence_number:
+                    continue
+                elif ack_response is None:
+                    ack_response = response[8:]
+                else:
+                    completion_response = response[8:]
+                    break
+
+            except socket.timeout:  # Occasionally we don't get a response because this is UDP
+                self.num_timeouts += 1
+                break
+
+        self.sequence_number += 1  # TODO wrap
 
     def reset_sequence_number(self):
         message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
-        self.sock.sendto(message, (self.ip, self.port))
+        self._sock.sendto(message, self._location)
+        self._sock.recv(32)
         self.sequence_number = 1
 
     def on(self):
@@ -108,7 +125,7 @@ class Camera:
         Zooms out or in at the given speed.
         :param speed: -7 to 7 where positive numbers zoom in and zero stops the zooming
         """
-        if not -7 < speed < 7:
+        if abs(speed) > 7:
             raise ValueError('The zoom speed must be -7 to 7 inclusive')
 
         speed_hex = f'{abs(speed):x}'
