@@ -3,8 +3,10 @@ import pygame
 #from camera import *
 #c = Camera('192.168.0.100', 52381)
 
+pygame.init()
 pygame.joystick.init()
 
+from time import sleep
 
 if pygame.joystick.get_count() != 0:
     j = pygame.joystick.Joystick(0)
@@ -26,8 +28,12 @@ while done == False:
 			done = True
 			continue
 
-	print(j.get_axis(1)) # analog value
-	print(j.get_axis(0))
-	
+	#print('1: ',j.get_axis(1)) # analog value for forward -1  backward 1
+	#print('0: ',j.get_axis(0)) # left -1  right 1
+	#print('2: ',j.get_axis(2)) # throttle -1 full forward  1 full back
 	clock.tick()
+	tick += 1
+	#if tick > 20000:
+	#	done = True
+	#	continue
 pygame.quit ()
