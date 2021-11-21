@@ -1,4 +1,5 @@
 import socket
+from typing import Optional, Tuple
 
 
 class ViscaException(RuntimeError):
@@ -6,7 +7,6 @@ class ViscaException(RuntimeError):
     pass
 
 
-ACK_RESPONSES = ['0f01', '9041ff']
 SEQUENCE_NUM_MAX = 2 ** 32 - 1
 
 
@@ -20,9 +20,9 @@ class Camera:
         self.num_timeouts = 0
         self.sequence_number = 0
         self.reset_sequence_number()
-        self._send_command('00 01')  # clear the camera's interface socket
+        self._send_command('00 01', has_ack=False)  # clear the camera's interface socket
 
-    def _send_command(self, command_hex):
+    def _send_command(self, command_hex, has_ack=True):
         payload_type = b'\x01\x00'
         preamble = b'\x81\x01'
         terminator = b'\xff'
@@ -35,6 +35,29 @@ class Camera:
 
         self._sock.sendto(message, self._location)
 
+        if has_ack:
+            self._receive_ack_and_completion()
+        else:
+            self._receive_completion()
+
+        self._increment_sequence_number()
+
+    def _receive_completion(self) -> Optional[bytes]:
+        completion_response = None
+
+        try:
+            response = self._sock.recv(32)
+            completion_response = response[8:]
+            status_byte = completion_response[1]
+            if status_byte >> 4 != 5:
+                raise ViscaException(f'Command was not acknowledged. Response: {ack_response.hex()}')
+
+        except socket.timeout:  # Occasionally we don't get a response because this is UDP
+            self.num_timeouts += 1
+
+        return completion_response
+
+    def _receive_ack_and_completion(self) -> Tuple[Optional[bytes], Optional[bytes]]:
         ack_response = None
         completion_response = None
 
@@ -47,19 +70,22 @@ class Camera:
                     continue
                 elif ack_response is None:
                     ack_response = response[8:]
+                    status_byte = ack_response[1]
+                    if status_byte >> 4 != 4:
+                        raise ViscaException(f'Command was not acknowledged. Response: {ack_response.hex()}')
                 else:
                     completion_response = response[8:]
-                    break
 
             except socket.timeout:  # Occasionally we don't get a response because this is UDP
                 self.num_timeouts += 1
                 break
 
-        self._increment_sequence_number()
+        return ack_response, completion_response
 
     def reset_sequence_number(self):
         message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
         self._sock.sendto(message, self._location)
+        self._sock.recv(32)
         self.sequence_number = 1
 
     def _increment_sequence_number(self):
