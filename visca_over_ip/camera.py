@@ -35,10 +35,13 @@ class Camera:
 
         self._sock.sendto(message, self._location)
 
-        if has_ack:
-            self._receive_ack_and_completion()
-        else:
-            self._receive_completion()
+        try:
+            if has_ack:
+                self._receive_ack_and_completion()
+            else:
+                self._receive_completion()
+        except ViscaException as exc:
+            print(exc)  # TODO
 
         self._increment_sequence_number()
 
@@ -50,7 +53,7 @@ class Camera:
             completion_response = response[8:]
             status_byte = completion_response[1]
             if status_byte >> 4 != 5:
-                raise ViscaException(f'Command was not acknowledged. Response: {ack_response.hex()}')
+                raise ViscaException(f'Camera sent error response: {completion_response.hex()}')
 
         except socket.timeout:  # Occasionally we don't get a response because this is UDP
             self.num_timeouts += 1
@@ -72,7 +75,7 @@ class Camera:
                     ack_response = response[8:]
                     status_byte = ack_response[1]
                     if status_byte >> 4 != 4:
-                        raise ViscaException(f'Command was not acknowledged. Response: {ack_response.hex()}')
+                        raise ViscaException(f'Camera sent error response: {ack_response.hex()}')
                 else:
                     completion_response = response[8:]
 
