@@ -1,6 +1,4 @@
 import socket
-import binascii
-import time
 
 
 class ViscaException(RuntimeError):
@@ -9,6 +7,7 @@ class ViscaException(RuntimeError):
 
 
 ACK_RESPONSES = ['0f01', '9041ff']
+SEQUENCE_NUM_MAX = 2 ** 32 - 1
 
 
 class Camera:
@@ -56,13 +55,17 @@ class Camera:
                 self.num_timeouts += 1
                 break
 
-        self.sequence_number += 1  # TODO wrap
+        self._increment_sequence_number()
 
     def reset_sequence_number(self):
         message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
         self._sock.sendto(message, self._location)
-        self._sock.recv(32)
         self.sequence_number = 1
+
+    def _increment_sequence_number(self):
+        self.sequence_number += 1
+        if self.sequence_number > SEQUENCE_NUM_MAX:
+            self.sequence_number = 0
 
     def on(self):
         self._send_command('04 00 02')
