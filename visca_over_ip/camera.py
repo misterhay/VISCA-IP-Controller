@@ -156,6 +156,12 @@ class Camera:
 
         self._send_command(payload)
 
+    def increase_excomp(self):
+        self._send_command('04 0E 02')
+
+    def decrease_excomp(self):
+        self._send_command('04 0E 03')
+
     def focus_auto(self):
         self.send('81 01 04 38 02 FF')
 
