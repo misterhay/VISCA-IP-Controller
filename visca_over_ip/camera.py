@@ -1,28 +1,35 @@
 import socket
-from typing import Optional, Tuple
+from typing import Optional
 
-
-class ViscaException(RuntimeError):
-    """Raised when the camera doesn't like a message that it received"""
-    pass
+from visca_over_ip.exceptions import ViscaException
 
 
 SEQUENCE_NUM_MAX = 2 ** 32 - 1
 
 
 class Camera:
+    """
+    Represents a camera that has a VISCA-over-IP interface.
+    Provides methods to control a camera over that interface.
+    """
     def __init__(self, ip, port=52381):
         self._location = (ip, port)
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # for UDP stuff
         self._sock.bind(('', port))
         self._sock.settimeout(0.1)
 
-        self.num_timeouts = 0
-        self.sequence_number = 0
+        self.num_missed_responses = 0
+        self.sequence_number = 0  # This number is encoded in each message and incremented after sending each message
         self.reset_sequence_number()
-        self._send_command('00 01', has_ack=False)  # clear the camera's interface socket
+        self._send_command('00 01')  # clear the camera's interface socket
 
-    def _send_command(self, command_hex, has_ack=True):
+    def _send_command(self, command_hex: str):
+        """
+        Constructs a message based ong the given payload, sends it to the camera,
+        and blocks until an acknowledge or completion response has been received.
+
+        :param command_hex: The body of the command as a hex string. For example: "00 02" to power on.
+        """
         payload_type = b'\x01\x00'
         preamble = b'\x81\x01'
         terminator = b'\xff'
@@ -32,38 +39,18 @@ class Camera:
         sequence_bytes = self.sequence_number.to_bytes(4, 'big')
 
         message = payload_type + payload_length + sequence_bytes + payload_bytes
-
         self._sock.sendto(message, self._location)
 
-        try:
-            if has_ack:
-                self._receive_ack_and_completion()
-            else:
-                self._receive_completion()
-        except ViscaException as exc:
-            print(exc)  # TODO
-
+        self._receive_response()
         self._increment_sequence_number()
 
-    def _receive_completion(self) -> Optional[bytes]:
-        completion_response = None
-
-        try:
-            response = self._sock.recv(32)
-            completion_response = response[8:]
-            status_byte = completion_response[1]
-            if status_byte >> 4 != 5:
-                raise ViscaException(f'Camera sent error response: {completion_response.hex()}')
-
-        except socket.timeout:  # Occasionally we don't get a response because this is UDP
-            self.num_timeouts += 1
-
-        return completion_response
-
-    def _receive_ack_and_completion(self) -> Tuple[Optional[bytes], Optional[bytes]]:
-        ack_response = None
-        completion_response = None
-
+    def _receive_response(self) -> Optional[bytes]:
+        """
+        Attempts to receive the response of the most recent command.
+        Sometimes we don't get the response because this is UDP.
+        In that case we just increment num_missed_responses and move on.
+        :raises ViscaException: if the response if an error and not an acknowledge or completion
+        """
         while True:
             try:
                 response = self._sock.recv(32)
@@ -71,24 +58,22 @@ class Camera:
 
                 if response_sequence_number < self.sequence_number:
                     continue
-                elif ack_response is None:
-                    ack_response = response[8:]
-                    status_byte = ack_response[1]
-                    if status_byte >> 4 != 4:
-                        raise ViscaException(f'Camera sent error response: {ack_response.hex()}')
                 else:
-                    completion_response = response[8:]
+                    response_payload = response[8:]
+                    status_byte = response_payload[1]
+                    if status_byte >> 4 not in [5, 4]:
+                        raise ViscaException(response_payload)
+                    else:
+                        return response_payload
 
             except socket.timeout:  # Occasionally we don't get a response because this is UDP
-                self.num_timeouts += 1
+                self.num_missed_responses += 1
                 break
-
-        return ack_response, completion_response
 
     def reset_sequence_number(self):
         message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
         self._sock.sendto(message, self._location)
-        self._sock.recv(32)
+        self._receive_response()
         self.sequence_number = 1
 
     def _increment_sequence_number(self):
@@ -96,26 +81,35 @@ class Camera:
         if self.sequence_number > SEQUENCE_NUM_MAX:
             self.sequence_number = 0
 
-    def on(self):
-        self._send_command('04 00 02')
-    
-    def off(self):
-        self._send_command('04 00 03')
+    def set_power(self, power_state: bool):
+        """Powers on or off the camera based on the value of power_state"""
+        if power_state:
+            self._send_command('04 00 02')
+        else:
+            self._send_command('04 00 03')
 
-    def info_display_on(self):
-        self._send_command('7E 01 18 02')
-
-    def info_display_off(self):
-        self._send_command('7E 01 18 03')
-
-    def pantilt(self, pan_speed: int, tilt_speed: int):
+    def pantilt(self, pan_speed: int, tilt_speed: int, pan_position=None, tilt_position=None, relative=False):
         """
-        Commands the camera to pan and/or tilt at the given speeds and directions.
+        Commands the camera to pan and/or tilt.
+        You must specify both pan_position and tilt_position OR specify neither
 
         :param pan_speed: -24 to 24 where negative numbers cause a left pan and 0 causes panning to stop
         :param tilt_speed: -24 to 24 where negative numbers cause a downward tilt and 0 causes tilting to stop
+        :param pan_position: if specified, the camera will move this distance or go to this absolute position
+            depending on the value of `relative`.
+            Valid values are integers by default between 0x2200 and 0xDE00.
+            Camera users may set more restrictive pan limits for a camera.
+        :param tilt_position: if specified, the camera will move this distance or go to this absolute position
+            depending on the value of `relative`.
+            Valid values are integers 0x1200 to 0xFC00 if image flip is on or 0xEE00 to 0x400 if image flip is off.
+            Camera users may set more restrictive tilt limits for a camera
+        :param relative: If set to True, the position will be relative instead of absolute (default).
+
+        :raises ViscaException: if invalid values are specified for targets or distances
+        :raises ValueError: if invalid values are specified for speeds
         """
-        payload_start = '06 01'
+        if [tilt_position, pan_position].count(None) == 1:
+            raise ValueError('You must specify both pan_position and tilt_position or nether')
 
         if abs(pan_speed) > 24 or abs(tilt_speed) > 24:
             raise ValueError('pan_speed and tilt_speed must be between -24 and 24 inclusive')
@@ -123,34 +117,37 @@ class Camera:
         pan_speed_hex = f'{abs(pan_speed):02x}'
         tilt_speed_hex = f'{abs(tilt_speed):02x}'
 
-        direction_hex = ''
-        for speed in [pan_speed, tilt_speed]:
-            if speed > 0:
-                direction_hex += ' 01'
-            elif speed < 0:
-                direction_hex += ' 02'
-            else:
-                direction_hex += ' 03'
+        if tilt_position is not None and pan_position is not None:
+            pan_position_hex = ' '.join(['0' + char for char in f'{pan_position:04x}'])
+            tilt_position_hex = ' '.join(['0' + char for char in f'{tilt_position:04x}'])
+            relative_hex = '03' if relative else '02'
+            self._send_command(
+                '06' + relative_hex + pan_speed_hex + tilt_speed_hex + pan_position_hex + tilt_position_hex
+            )
 
-        self._send_command(payload_start + pan_speed_hex + tilt_speed_hex + direction_hex)
+        else:
+            payload_start = '06 01'
 
-    def pantilt_stop(self):
-        self.pantilt(0, 0)
+            def get_direction_hex(speed: int):
+                if speed > 0:
+                    return '01'
+                if speed < 0:
+                    return '02'
+                else:
+                    return '03'
+
+            self._send_command(
+                payload_start + pan_speed_hex + tilt_speed_hex +
+                get_direction_hex(pan_speed) + get_direction_hex(tilt_speed)
+            )
 
     def pantilt_home(self):
+        """Moves the camera to the home position"""
         self._send_command('06 04')
-    
+
     def pantilt_reset(self):
+        """Moves the camera to the reset position"""
         self._send_command('06 05')
-
-    def zoom_in(self):
-        self.send('81 01 04 07 02 FF')
-
-    def zoom_out(self):
-        self.send('81 01 04 07 03 FF')
-    
-    def zoom_stop(self):
-        self.zoom(0)
 
     def zoom(self, speed: int):
         """
@@ -171,7 +168,7 @@ class Camera:
 
         self._send_command(f'04 07 {direction_hex}{speed_hex}')
     
-    def zoom_to(self, position: float):  # 0 <= zoom position <= 16384
+    def zoom_to(self, position: float):
         """
         Zooms to an absolute position
         :param position: 0-1, where 1 is zoomed all the way in
@@ -179,136 +176,17 @@ class Camera:
         position_int = round(position * 16384)
         position_hex = f'{position_int:04x}'
 
-        payload = '04 47'
-        for hex_char in position_hex:
-            payload += f' 0{hex_char}'
+        self._send_command('04 47 ' + ''.join(['0' + char for char in position_hex]))
 
-        self._send_command(payload)
-
-    def increase_excomp(self):
-        self._send_command('04 0E 02')
-
-    def decrease_excomp(self):
-        self._send_command('04 0E 03')
-
-    def focus_auto(self):
-        self.send('81 01 04 38 02 FF')
-
-    def focus_manual(self):
-        self.send('81 01 04 38 03 FF')
-
-    def focus_infinity(self):
-        self.send('81 01 04 18 02 FF')
-
-    def focus_near(self):
-        self.send('81 01 04 08 03 FF')
-    
-    def focus_far(self):
-        self.send('81 01 04 08 02 FF')
-    
-    def focus_stop(self):
-        self.send('81 01 04 08 00 FF')
-    
-    def focus_near_variable(self, speed):  # 0 low to 7 high
-        try:
-            if 0 <= speed <= 7:
-                pass
-            else:
-                speed = 0
-        except:
-            speed = 0
-        self.send('81 01 04 08 2'+str(speed)+' FF')
-    
-    def focus_far_variable(self, speed): # 0 low to 7 high
-        try:
-            if 0 <= speed <= 7:
-                pass
-            else:
-                speed = 0
-        except:
-            speed = 0
-        self.send('81 01 04 08 3'+str(speed)+' FF')
-
-    def focus_to(self, position): # infinity = 0, 0.08m = 16
-        try:
-            if 0 <= position <= 16:
-                x = str(hex(position)[2:])
-                self.send('81 01 04 47 0'+x+' 00 00 00 FF')
-        except:
-            pass
-    
-    def focus_one_push(self):
-        self.send('81 01 04 18 01 FF')
-
-    def autofocus_mode(self, mode): # 'normal', 'interval', 'zoom'
-        if mode == 'normal':
-            self.send('81 01 04 57 00 FF')
-        if mode == 'interval':
-            self.send('81 01 04 57 01 FF')
-        if mode == 'zoom':
-            self.send('81 01 04 57 02 FF')
-        
-    def autofocus_interval(self, operating, staying):
-        try:
-            self.send('81 01 04 57 02 FF') # set mode to interval
-            if 0 <= operating <= 255 and 0 <= staying <= 255:
-                x = str(hex(operating)[2:])
-                y = str(hex(staying)[2:])
-                self.send('81 01 04 27 0'+x[0]+' 0'+x[1]+' 0'+y[0]+' 0'+y[1]+' FF')
-        except:
-            pass
-    
-    def autofocus_sensitivity(self, sensitivity): # normal or low
-        if sensitivity == 'low':
-            self.send('81 01 04 58 03 FF')
+    def set_info_overlay(self, enable: bool):
+        """Enables or disables an information overlay on the camera's video output"""
+        if enable:
+            self._send_command('7E 01 18 02')
         else:
-            self.send('81 01 04 58 02 FF')
+            self._send_command('7E 01 18 03')
 
-    def memory_recall(self, memory_number):
-        self.info_display_off() # otherwise we see a message on the camera output
-        self.sleep(0.25)
-        memory_hex = str(hex(memory_number)[2:])
-        self.send('81 01 04 3F 02 0'+memory_hex+' FF')
-        self.sleep(1)
-        self.info_display_off() # to make sure it doesn't display "done"
+    def increase_exposure_compensation(self):
+        self._send_command('0E 02')
 
-    def memory_set(self, memory_number): # 8x 01 04 3F 01 0p FF
-        memory_hex = hex(memory_number)[-1]
-        self.send('81 01 04 3F 01 0p FF'.replace('p', memory_hex))
-    
-    def memory_reset(self, memory_number):
-        memory_hex = str(hex(memory_number)[2:])
-        self.send('81 01 04 3F 00 0'+memory_hex+' FF')
-
-    def inquiry_zoom_position(self):
-        self.send('81 09 04 47 FF')
-    
-    def inquiry_focus_position(self):
-        self.send('81 09 04 48 FF')
-
-    def inquiry_pantilt_position(self):
-        self.send('81 09 06 12 FF')
-
-'''
-## Messages from Camera
-90 50 FF      Interface cleared
-90 4y FF      Acknowledge
-90 5y FF      Complete
-90 5Y ... FF  Inquiry Response
-y = socket number
-
-## Inquiry Responses
-y0 50 0p 0q 0r 0s FF  Zoom or Focus Position
-y0 50 0w 0w 0w 0w 0z 0z 0z 0z FF  wwww = Pan Position, zzzz = Tilt Position
-y = socket number
-
-## Errors
-90 6y 01 FF  Message length error
-90 60 02 FF  Syntax Error
-90 60 03 FF  Command buffer full
-90 6y 04 FF  Command canceled
-90 6y 05 FF  No socket (to be canceled)
-90 6y 41 FF  Command not executable
-y = socket number
-
-'''
+    def decrease_exposure_compensation(self):
+        self._send_command('0E 03')
