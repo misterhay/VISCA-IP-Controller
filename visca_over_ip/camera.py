@@ -105,19 +105,25 @@ class Camera:
             Camera users may set more restrictive tilt limits for a camera
         :param relative: If set to True, the position will be relative instead of absolute (default).
 
-        :raises ViscaException: if invalid values are specified for targets or distances
+        :raises ViscaException: if invalid values are specified for positions
         :raises ValueError: if invalid values are specified for speeds
         """
-        if [tilt_position, pan_position].count(None) == 1:
+        speed_params = [pan_speed, tilt_speed]
+        position_params = [pan_position, tilt_position]
+
+        if position_params.count(None) == 1:
             raise ValueError('You must specify both pan_position and tilt_position or nether')
 
         if abs(pan_speed) > 24 or abs(tilt_speed) > 24:
             raise ValueError('pan_speed and tilt_speed must be between -24 and 24 inclusive')
 
+        if not all(isinstance(param, int) or param is None for param in speed_params + position_params):
+            raise ValueError('All parameters must be ints or None')
+
         pan_speed_hex = f'{abs(pan_speed):02x}'
         tilt_speed_hex = f'{abs(tilt_speed):02x}'
 
-        if tilt_position is not None and pan_position is not None:
+        if None not in position_params:
             pan_position_hex = ' '.join(['0' + char for char in f'{pan_position:04x}'])
             tilt_position_hex = ' '.join(['0' + char for char in f'{tilt_position:04x}'])
             relative_hex = '03' if relative else '02'
@@ -154,8 +160,8 @@ class Camera:
         Zooms out or in at the given speed.
         :param speed: -7 to 7 where positive numbers zoom in and zero stops the zooming
         """
-        if abs(speed) > 7:
-            raise ValueError('The zoom speed must be -7 to 7 inclusive')
+        if not isinstance(speed, int) or abs(speed) > 7:
+            raise ValueError('The zoom speed must be an integer from -7 to 7 inclusive')
 
         speed_hex = f'{abs(speed):x}'
 
@@ -177,13 +183,6 @@ class Camera:
         position_hex = f'{position_int:04x}'
 
         self._send_command('04 47 ' + ''.join(['0' + char for char in position_hex]))
-
-    def set_info_overlay(self, enable: bool):
-        """Enables or disables an information overlay on the camera's video output"""
-        if enable:
-            self._send_command('7E 01 18 02')
-        else:
-            self._send_command('7E 01 18 03')
 
     def increase_exposure_compensation(self):
         self._send_command('0E 02')
