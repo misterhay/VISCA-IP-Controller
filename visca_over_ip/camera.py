@@ -185,7 +185,50 @@ class Camera:
         self._send_command('04 47 ' + ''.join(['0' + char for char in position_hex]))
 
     def increase_exposure_compensation(self):
-        self._send_command('0E 02')
+        self._send_command('04 0E 02')
 
     def decrease_exposure_compensation(self):
-        self._send_command('0E 03')
+        self._send_command('04 0E 03')
+
+    def focus_mode(self, mode: str):
+        """
+        Sets the focus mode of the camera
+
+        :param mode: One of "auto", "manual", "auto/manual", "one push trigger", or "infinity".
+            See the manual for an explanation of these modes.
+        """
+        modes = {
+            'auto': '38 02',
+            'manual': '38 03',
+            'auto/manual': '38 10',
+            'one push trigger': '18 01',
+            'infinity': '18 02'
+        }
+
+        mode = mode.lower()
+        if mode not in modes:
+            raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
+
+        self._send_command('04 ' + modes[mode])
+
+    def manual_focus(self, speed: int):
+        """
+        Focuses near or far at the given speed.
+        Set the focus mode to manual before calling this method.
+
+        :param speed: -7 to 7 where positive integers focus near and negative integers focus far
+        """
+        if not isinstance(speed, int) or abs(speed) > 7:
+            raise ValueError('The focus speed must be an integer from -7 to 7 inclusive')
+
+        speed_hex = f'{abs(speed):x}'
+
+        if speed == 0:
+            direction_hex = '0'
+        elif speed > 0:
+            direction_hex = '2'
+        else:
+            direction_hex = '3'
+
+        self._send_command(f'04 08 {direction_hex}{speed_hex}')
+
