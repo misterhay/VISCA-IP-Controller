@@ -60,11 +60,12 @@ class Camera:
                     continue
                 else:
                     response_payload = response[8:]
-                    status_byte = response_payload[1]
-                    if status_byte >> 4 not in [5, 4]:
-                        raise ViscaException(response_payload)
-                    else:
-                        return response_payload
+                    if len(response_payload) > 1:
+                        status_byte = response_payload[1]
+                        if status_byte >> 4 not in [5, 4]:
+                            raise ViscaException(response_payload)
+                        else:
+                            return response_payload
 
             except socket.timeout:  # Occasionally we don't get a response because this is UDP
                 self.num_missed_responses += 1
