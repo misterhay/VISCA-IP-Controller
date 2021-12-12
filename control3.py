@@ -27,15 +27,15 @@ pan_tilt_row = 1
 zoom_column = 3
 zoom_row = 1
 focus_column = 3
-focus_row = 8
+focus_row = 5
 on_off_column = 3
 on_off_row = 13
 button_width = 8
 store_color = 'red'
 recall_color = 'light grey'
 pan_tilt_color = 'white'
-zoom_color = 'light blue'
-focus_color = 'cyan'
+zoom_color = 'cyan'
+focus_color = 'light blue'
 on_off_color = 'violet'
 
 # Preset store buttons
@@ -120,6 +120,15 @@ Label(root, text='Zoom', bg=zoom_color, width=button_width).grid(row=zoom_row, c
 Button(root, text='In', bg=zoom_color, width=button_width, command=lambda: c.zoom_in()).grid(row=zoom_row+1, column=zoom_column)
 Button(root, text='Stop', bg=zoom_color, width=button_width, command=lambda: c.zoom_stop()).grid(row=zoom_row+2, column=zoom_column)
 Button(root, text='Out', bg=zoom_color, width=button_width, command=lambda: c.zoom_out()).grid(row=zoom_row+3, column=zoom_column)
+
+# Focus buttons
+Label(root, text='Focus', bg=focus_color, width=button_width).grid(row=focus_row, column=focus_column)
+Button(root, text='Far', bg=focus_color, width=button_width, command=lambda: c.focus_far()).grid(row=focus_row+1, column=focus_column)
+Button(root, text='Stop', bg=focus_color, width=button_width, command=lambda: c.focus_stop()).grid(row=focus_row+2, column=focus_column)
+Button(root, text='Near', bg=focus_color, width=button_width, command=lambda: c.focus_near()).grid(row=focus_row+3, column=focus_column)
+Button(root, text='Manual', bg=focus_color, width=button_width, command=lambda: c.focus_manual()).grid(row=focus_row+4, column=focus_column)
+Button(root, text='One Push', bg=focus_color, width=button_width, command=lambda: c.focus_one_push()).grid(row=focus_row+5, column=focus_column)
+Button(root, text='Auto', bg=focus_color, width=button_width, command=lambda: c.focus_auto()).grid(row=focus_row+6, column=focus_column)
 
 # On off connect buttons
 Label(root, text='Camera', bg=on_off_color, width=button_width).grid(row=on_off_row, column=on_off_column)
