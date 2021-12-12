@@ -16,7 +16,7 @@ class Camera:
     def __init__(self, ip, port):
         self.ip = ip
         self.port = port
-        self.s.bind('', port) # for receiving
+        self.s.bind(('', port)) # for receiving
         self.reset_sequence_number()
     
     def connect(self):
