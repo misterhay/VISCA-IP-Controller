@@ -84,10 +84,16 @@ class Camera:
 
     def set_power(self, power_state: bool):
         """Powers on or off the camera based on the value of power_state"""
-        if power_state:
-            self._send_command('04 00 02')
-        else:
-            self._send_command('04 00 03')
+        for _ in range(4):
+            try:
+                if power_state:
+                    self._send_command('04 00 02')
+                else:
+                    self._send_command('04 00 03')
+
+            except ViscaException as exc:
+                if exc.status_code != 0x41:
+                    raise exc
 
     def pantilt(self, pan_speed: int, tilt_speed: int, pan_position=None, tilt_position=None, relative=False):
         """
