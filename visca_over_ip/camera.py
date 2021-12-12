@@ -60,7 +60,7 @@ class Camera:
                     continue
                 else:
                     response_payload = response[8:]
-                    if len(response_payload) > 1:
+                    if len(response_payload) > 2:
                         status_byte = response_payload[1]
                         if status_byte >> 4 not in [5, 4]:
                             raise ViscaException(response_payload)
@@ -232,4 +232,18 @@ class Camera:
             direction_hex = '3'
 
         self._send_command(f'04 08 {direction_hex}{speed_hex}')
+
+    def save_preset(self, preset_num: int):
+        """Saves many of the camera's settings in one of 16 slots"""
+        if not 0 <= preset_num <= 15:
+            raise ValueError('Preset num must be 0-15 inclusive')
+
+        self._send_command(f'04 3F 01 0{preset_num:x}')
+
+    def recall_preset(self, preset_num: int):
+        """Instructs the camera to recall one of the 16 saved presets"""
+        if not 0 <= preset_num <= 16:
+            raise ValueError('Preset num must be 0-15 inclusive')
+
+        self._send_command(f'04 3F 02 0{preset_num:x}')
 
