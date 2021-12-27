@@ -1,7 +1,7 @@
 import socket
 from typing import Optional
 
-from visca_over_ip.exceptions import ViscaException
+from visca_over_ip.exceptions import ViscaException, NoQueryResponse
 
 
 SEQUENCE_NUM_MAX = 2 ** 32 - 1
@@ -27,18 +27,21 @@ class Camera:
 
         self.num_missed_responses = 0
         self.sequence_number = 0  # This number is encoded in each message and incremented after sending each message
+        self.num_retries = 5
         self.reset_sequence_number()
         self._send_command('00 01')  # clear the camera's interface socket
 
-    def _send_command(self, command_hex: str):
-        """
-        Constructs a message based ong the given payload, sends it to the camera,
+    def _send_command(self, command_hex: str, query=False) -> Optional[bytes]:
+        """Constructs a message based ong the given payload, sends it to the camera,
         and blocks until an acknowledge or completion response has been received.
 
         :param command_hex: The body of the command as a hex string. For example: "00 02" to power on.
+        :param query: Set to True if this is a query and not a standard command.
+            This affects the message preamble and also ensures that a response will be returned and not None
+        :return: The body of the first response to the given command as bytes
         """
         payload_type = b'\x01\x00'
-        preamble = b'\x81\x01'
+        preamble = b'\x81' + (b'\x09' if query else b'\x01')
         terminator = b'\xff'
 
         payload_bytes = preamble + bytearray.fromhex(command_hex) + terminator
@@ -46,10 +49,24 @@ class Camera:
         sequence_bytes = self.sequence_number.to_bytes(4, 'big')
 
         message = payload_type + payload_length + sequence_bytes + payload_bytes
-        self._sock.sendto(message, self._location)
 
-        self._receive_response()
-        self._increment_sequence_number()
+        exception = None
+        for retry_num in range(self.num_retries):
+            self._increment_sequence_number()
+            self._sock.sendto(message, self._location)
+
+            try:
+                response = self._receive_response()
+            except ViscaException as exc:
+                exception = exc
+            else:
+                if response is not None or not query:
+                    return response
+
+        if exception:
+            raise exception
+        else:
+            raise NoQueryResponse(f'Could not get a response after {self.num_retries} tries')
 
     def _receive_response(self) -> Optional[bytes]:
         """Attempts to receive the response of the most recent command.
@@ -109,8 +126,7 @@ class Camera:
                     raise exc
 
     def pantilt(self, pan_speed: int, tilt_speed: int, pan_position=None, tilt_position=None, relative=False):
-        """
-        Commands the camera to pan and/or tilt.
+        """Commands the camera to pan and/or tilt.
         You must specify both pan_position and tilt_position OR specify neither
 
         :param pan_speed: -24 to 24 where negative numbers cause a left pan and 0 causes panning to stop
@@ -227,6 +243,13 @@ class Camera:
             raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
 
         self._send_command('04 ' + modes[mode])
+
+    def get_focus_mode(self) -> str:
+        """:return: either 'auto' or 'manual'"""
+        modes = {2: 'auto', 3: 'manual'}
+
+        response = self._send_command('04 38', query=True)
+        return modes[response[-1]]
 
     def manual_focus(self, speed: int):
         """Focuses near or far at the given speed.
