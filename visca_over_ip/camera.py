@@ -82,6 +82,13 @@ class Camera:
         if self.sequence_number > SEQUENCE_NUM_MAX:
             self.sequence_number = 0
 
+    def close_connection(self):
+        """Only one camera can be bound to a socket at once.
+        If you want to connect to another camera which uses the same communication port,
+        first call this method on the first camera.
+        """
+        self._sock.close()
+
     def set_power(self, power_state: bool):
         """Powers on or off the camera based on the value of power_state"""
         for _ in range(4):
