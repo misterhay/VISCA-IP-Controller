@@ -11,8 +11,15 @@ class Camera:
     """
     Represents a camera that has a VISCA-over-IP interface.
     Provides methods to control a camera over that interface.
+
+    Only one camera can be connected on a given port at a time.
+    If you wish to use multiple cameras, you will need to switch between them (use :meth:`close_connection`)
+    or set them up to use different ports.
     """
     def __init__(self, ip, port=52381):
+        """:param ip: the IP address or hostname of the camera you want to talk to.
+        :param port: the port number to use.
+        """
         self._location = (ip, port)
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # for UDP stuff
         self._sock.bind(('', port))
@@ -45,8 +52,7 @@ class Camera:
         self._increment_sequence_number()
 
     def _receive_response(self) -> Optional[bytes]:
-        """
-        Attempts to receive the response of the most recent command.
+        """Attempts to receive the response of the most recent command.
         Sometimes we don't get the response because this is UDP.
         In that case we just increment num_missed_responses and move on.
         :raises ViscaException: if the response if an error and not an acknowledge or completion
@@ -170,8 +176,7 @@ class Camera:
         self._send_command('06 05')
 
     def zoom(self, speed: int):
-        """
-        Zooms out or in at the given speed.
+        """Zooms out or in at the given speed.
         :param speed: -7 to 7 where positive numbers zoom in and zero stops the zooming
         """
         if not isinstance(speed, int) or abs(speed) > 7:
@@ -189,8 +194,7 @@ class Camera:
         self._send_command(f'04 07 {direction_hex}{speed_hex}')
     
     def zoom_to(self, position: float):
-        """
-        Zooms to an absolute position
+        """Zooms to an absolute position
         :param position: 0-1, where 1 is zoomed all the way in
         """
         position_int = round(position * 16384)
@@ -204,9 +208,8 @@ class Camera:
     def decrease_exposure_compensation(self):
         self._send_command('04 0E 03')
 
-    def focus_mode(self, mode: str):
-        """
-        Sets the focus mode of the camera
+    def set_focus_mode(self, mode: str):
+        """Sets the focus mode of the camera
 
         :param mode: One of "auto", "manual", "auto/manual", "one push trigger", or "infinity".
             See the manual for an explanation of these modes.
@@ -226,8 +229,7 @@ class Camera:
         self._send_command('04 ' + modes[mode])
 
     def manual_focus(self, speed: int):
-        """
-        Focuses near or far at the given speed.
+        """Focuses near or far at the given speed.
         Set the focus mode to manual before calling this method.
 
         :param speed: -7 to 7 where positive integers focus near and negative integers focus far
