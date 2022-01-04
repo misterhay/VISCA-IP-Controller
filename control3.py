@@ -2,13 +2,30 @@
 # sudo apt install python3-tk
 
 from camera import *
-c = Camera('192.168.0.100', 52381)
+
+try:
+    with open('config.txt', 'r') as f:
+        ip_and_port = f.read().splitlines()
+        ip = ip_and_port[0]
+        port = int(ip_and_port[1])
+    f.close()
+except:
+    ip = '192.168.1.100'
+    port = 52381
+c = Camera(ip, port)
 
 def save_preset_labels():
     with open('preset_labels.txt', 'w') as f:
         for entry in entry_boxes:
             f.write(entry.get())
             f.write('\n')
+    f.close()
+
+def save_ip_and_port():
+    with open('config.txt', 'w') as f:
+        f.write(ip_entry.get())
+        f.write('\n')
+        f.write(port_entry.get())
     f.close()
 
 # GUI
@@ -136,6 +153,18 @@ Button(root, text='On', bg=on_off_color, width=button_width, command=lambda: c.o
 Button(root, text='Connect', bg=on_off_color, width=button_width, command=lambda: c.connect()).grid(row=on_off_row+2, column=on_off_column)
 Button(root, text='Off', bg=on_off_color, width=button_width, command=lambda: c.off()).grid(row=on_off_row+3, column=on_off_column)
 Button(root, text='Info Off', bg=on_off_color, width=button_width, command=lambda: c.info_display_off()).grid(row=on_off_row+4, column=on_off_column)
+
+# IP and Port entry
+Label(root, text='Camera IP', width=button_width).grid(row=18, column=label_column-1)
+ip_entry = Entry(root, textvariable=ip)
+ip_entry.grid(row=18, column=label_column)
+ip_entry.insert(0, ip)
+Button(root, text='Save', command=lambda: save_ip_and_port()).grid(row=18, column=label_column+1)
+Label(root, text='Port', width=button_width).grid(row=19, column=label_column-1)
+port_entry = Entry(root, textvariable=port)
+port_entry.grid(row=19, column=label_column)
+port_entry.insert(0, port)
+Button(root, text='Save', command=lambda: save_ip_and_port()).grid(row=19, column=label_column+1)
 
 # IP Label
 #Label(root, text=camera_ip+':'+str(camera_port)).grid(row=6, column=0, columnspan=3)
