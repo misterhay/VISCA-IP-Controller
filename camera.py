@@ -263,8 +263,187 @@ class Camera:
         self.send('81 01 04 3F 01 0p FF'.replace('p', memory_hex))
     
     def memory_reset(self, memory_number):
-        memory_hex = str(hex(memory_number)[2:])
+        memory_hex = hex(memory_number)[-1]
         self.send('81 01 04 3F 00 0'+memory_hex+' FF')
+
+    def white_balance(self, mode):
+        modes = {'auto':'1', 'indoor':'2', 'outdoor':'3', 'one push':'4', 'manual':'5', 'outdoor auto':'6', 'sodium lamp auto':'7', 'sodium auto':'8'}
+        self.send('81 01 04 35 0'+modes[mode]+' FF')
+    
+    def gain(self, mode):
+        try:
+            if 0 <= mode <= 255:
+                mode_hex = format(mode, '02x')
+                self.send('81 01 04 0C 00 00 0'+mode_hex[0]+' 0'+mode_hex[1]+' FF')
+        except:
+            if mode == 'reset':
+                self.send('81 01 04 0C 00 FF')
+            elif mode == 'up':
+                self.send('81 01 04 0C 02 FF')
+            elif mode == 'down':
+                self.send('81 01 04 0C 03 FF')
+            else:
+                pass
+    
+    def rgain(self, gain): # reset, up, down, or direct (0 to 255)
+        if gain == 'reset':
+            self.send('81 01 04 03 00 FF')
+        elif gain == 'up':
+            self.send('81 01 04 03 02 FF')
+        elif gain == 'down':
+            self.send('81 01 04 03 03 FF')
+        else:
+            try:
+                if 0 <= gain <= 255:
+                    gain_hex = format(gain, '02x')
+                    self.send('81 01 04 43 00 00 0'+gain_hex[0]+' 0'+gain_hex[1]+' FF')
+            except:
+                pass
+
+    def bgain(self, gain): # reset, up, down, or direct (0 to 255)
+        if gain == 'reset':
+            self.send('81 01 04 04 00 FF')
+        elif gain == 'up':
+            self.send('81 01 04 04 02 FF')
+        elif gain == 'down':
+            self.send('81 01 04 04 03 FF')
+        else:
+            try:
+                if 0 <= gain <= 255:
+                    gain_hex = format(gain, '02x')
+                    self.send('81 01 04 44 00 00 0'+gain_hex[0]+' 0'+gain_hex[1]+' FF')
+            except:
+                pass
+
+    def color_gain(self, color, gain): # gain from -4 to +10
+        try:
+            channel_map = {'master':'0','magenta':'1','red':'2','yellow':'3','green':'4','cyan':'5','blue':'6'}
+            if color in channel_map.keys():
+                color = channel_map[color]
+            else:
+                color = '0'
+            if -4 <= gain <= 10:
+                gain_hex = hex(gain+4)[-1] # to map -4 to +10 to 0 to 15
+                self.send('81 01 04 49 00 00 0'+color+' 0'+gain_hex+' FF')
+        except:
+            pass
+
+    def autoexposure(self, mode):
+        modes = {'auto':'0', 'manual':'3', 'bright':'D'}
+        self.send('81 01 04 39 0'+modes[mode]+' FF')
+    
+    def shutter(self, mode): # reset, up, down, or direct (0 to 255)
+        try:
+            if 0 <= mode <= 255:
+                mode_hex = format(mode, '02x')
+                self.send('81 01 04 0A 00 00 0'+mode_hex[0]+' 0'+mode_hex[1]+' FF')
+        except:
+            if mode == 'reset':
+                self.send('81 01 04 0A 00 FF')
+            elif mode == 'up':
+                self.send('81 01 04 0A 02 FF')
+            elif mode == 'down':
+                self.send('81 01 04 0A 03 FF')
+            else:
+                pass
+    
+    def iris(self, mode):
+        try:
+            if 0 <= mode <= 255:
+                mode_hex = format(mode, '02x')
+                self.send('81 01 04 4B 00 00 0'+mode_hex[0]+' 0'+mode_hex[1]+' FF')
+        except:
+            if mode == 'reset':
+                self.send('81 01 04 0B 00 FF')
+            elif mode == 'up':
+                self.send('81 01 04 0B 02 FF')
+            elif mode == 'down':
+                self.send('81 01 04 0B 03 FF')
+            else:
+                pass
+
+    def brightness(self, mode):
+        try:
+            if 0 <= mode <= 255:
+                mode_hex = format(mode, '02x')
+                self.send('81 01 04 4D 00 00 0'+mode_hex[0]+' 0'+mode_hex[1]+' FF')
+        except:
+            if mode == 'reset':
+                self.send('81 01 04 0D 00 FF')
+            elif mode == 'up':
+                self.send('81 01 04 0D 02 FF')
+            elif mode == 'down':
+                self.send('81 01 04 0D 03 FF')
+            else:
+                pass
+
+    def exposure_compensation(self, mode):
+        try:
+            if 0 <= mode <= 255:
+                mode_hex = format(mode, '02x')
+                self.send('81 01 04 4E 00 00 0'+mode_hex[0]+' 0'+mode_hex[1]+' FF')
+        except:
+            if mode == 'reset':
+                self.send('81 01 04 0E 00 FF')
+            elif mode == 'up':
+                self.send('81 01 04 0E 02 FF')
+            elif mode == 'down':
+                self.send('81 01 04 0E 03 FF')
+            elif mode == 'on':
+                self.send('81 01 04 3E 02 FF')
+            elif mode == 'off':
+                self.send('81 01 04 3E 03 FF')
+            else:
+                pass
+
+    def backlight(self, mode):
+        modes = {'on':'2', 'off':'3'}
+        self.send('81 01 04 33 0'+modes[mode]+' FF')
+    
+    def aperature(self, mode):
+        try:
+            if 0 <= mode <= 255:
+                mode_hex = format(mode, '02x')
+                self.send('81 01 04 42 00 00 0'+mode_hex[0]+' 0'+mode_hex[1]+' FF')
+        except:
+            if mode == 'reset':
+                self.send('81 01 04 02 00 FF')
+            elif mode == 'up':
+                self.send('81 01 04 02 02 FF')
+            elif mode == 'down':
+                self.send('81 01 04 02 03 FF')
+            else:
+                pass
+    
+    def mirror(self, mode):
+        modes = {'on':'2', 'off':'3'}
+        self.send('81 01 04 61 0'+modes[mode]+' FF')
+    
+    def flip(self, mode):
+        modes = {'on':'2', 'off':'3'}
+        self.send('81 01 04 66 0'+modes[mode]+' FF')
+    
+    def mount_mode(self, mode):
+        modes = {'up':'2', 'down':'3'}
+        self.send('81 01 04 A4 0'+modes[mode]+' FF')
+
+    def noise_reduction_2d(self, amount):
+        try:
+            if 0 <= amount <= 5:
+                self.send('81 01 04 53 0'+str(amount)+' FF')
+        except:
+            pass
+    
+    def noise_reduction_3d(self, amount):
+        try:
+            if 0 <= amount <= 3:
+                self.send('81 01 04 54 0'+str(amount)+' FF')
+        except:
+            pass
+
+    def freeze(self, mode):
+        modes = {'on':'02', 'off':'03', 'preset_on':'22', 'preset_off':'23'}
+        self.send('81 01 04 62 '+modes[mode]+' FF')
 
     def inquiry_zoom_position(self):
         self.send('81 09 04 47 FF')
@@ -274,6 +453,8 @@ class Camera:
 
     def inquiry_pantilt_position(self):
         self.send('81 09 06 12 FF')
+
+    # TODO: other inquiry commands
 
 '''
 ## Messages from Camera
