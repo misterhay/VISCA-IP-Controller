@@ -10,8 +10,8 @@ class CachingCamera(Camera):
 
         self.state = {
             'focus_mode': super().get_focus_mode(),
-            'pan_tilt_stop': True,
-            'zoom_stop': True
+            'pan_tilt_stop': False,
+            'zoom_stop': False
         }
 
     def get_focus_mode(self) -> str:
@@ -41,4 +41,4 @@ class CachingCamera(Camera):
 
         else:
             super().zoom(speed)
-            self.state['zoom_stop'] = True
+            self.state['zoom_stop'] = False
