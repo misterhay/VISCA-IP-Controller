@@ -46,13 +46,14 @@ class Camera:
 
         payload_bytes = preamble + bytearray.fromhex(command_hex) + terminator
         payload_length = len(preamble + payload_bytes + terminator).to_bytes(2, 'big')
-        sequence_bytes = self.sequence_number.to_bytes(4, 'big')
 
-        message = payload_type + payload_length + sequence_bytes + payload_bytes
 
         exception = None
         for retry_num in range(self.num_retries):
             self._increment_sequence_number()
+            sequence_bytes = self.sequence_number.to_bytes(4, 'big')
+            message = payload_type + payload_length + sequence_bytes + payload_bytes
+
             self._sock.sendto(message, self._location)
 
             try:
@@ -60,8 +61,10 @@ class Camera:
             except ViscaException as exc:
                 exception = exc
             else:
-                if response is not None or not query:
-                    return response
+                if response is not None:
+                    return response[1:-1]
+                elif not query:
+                    return None
 
         if exception:
             raise exception
