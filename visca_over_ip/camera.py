@@ -1,5 +1,5 @@
 import socket
-from typing import Optional
+from typing import Optional, Tuple
 
 from visca_over_ip.exceptions import ViscaException, NoQueryResponse
 
@@ -288,3 +288,24 @@ class Camera:
 
         self._send_command(f'04 3F 02 0{preset_num:x}')
 
+    @staticmethod
+    def _zero_padded_bytes_to_int(zero_padded: bytes, signed=True) -> int:
+        """:param zero_padded: bytes like this: 0x01020304
+        :param signed: is this a signed integer?
+        :return: an integer like this 0x1234
+        """
+        unpadded_bytes = bytes.fromhex(zero_padded.hex()[1::2])
+        return int.from_bytes(unpadded_bytes, 'big', signed=signed)
+
+    def get_pantilt_position(self) -> Tuple[int, int]:
+        """:return: two signed integers representing the absolute pan and tilt positions respectively"""
+        response = self._send_command('06 12', query=True)
+        pan_bytes = response[1:5]
+        tilt_bytes = response[5:9]
+
+        return self._zero_padded_bytes_to_int(pan_bytes), self._zero_padded_bytes_to_int(tilt_bytes)
+
+    def get_zoom_position(self) -> int:
+        """:return: an unsigned integer representing the absolute zoom position"""
+        response = self._send_command('04 47', query=True)
+        return self._zero_padded_bytes_to_int(response[1:], signed=False)
