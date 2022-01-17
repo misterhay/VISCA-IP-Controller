@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # sudo apt install python3-tk
 
+<<<<<<< HEAD:control.py
 from camera import *
 
 try:
@@ -13,6 +14,10 @@ except:
     ip = '192.168.1.100'
     port = 52381
 c = Camera(ip, port)
+=======
+from visca_over_ip.camera import *
+c = Camera('192.168.0.100', 52381)
+>>>>>>> 718dd6202f3b86687fa6ea8e78ebc3ecb1a89581:utilities/control3.py
 
 def save_preset_labels():
     with open('preset_labels.txt', 'w') as f:
@@ -29,7 +34,8 @@ def save_ip_and_port():
     f.close()
 
 # GUI
-from tkinter import Tk, StringVar, Button, Label, Scale, Entry, W
+from tkinter import Tk, Button, Label, Scale, Entry
+
 root = Tk()
 #display_message = StringVar()
 root.title('VISCA IP Camera Controller')
