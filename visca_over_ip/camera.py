@@ -43,7 +43,7 @@ class Camera:
         terminator = b'\xff'
 
         payload_bytes = preamble + bytearray.fromhex(command_hex) + terminator
-        payload_length = len(preamble + payload_bytes + terminator).to_bytes(2, 'big')
+        payload_length = len(payload_bytes).to_bytes(2, 'big')
 
         exception = None
         for retry_num in range(self.num_retries):
