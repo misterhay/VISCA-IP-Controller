@@ -304,6 +304,28 @@ class Camera:
             self._send_command('04 11 00')
 
     # white balance
+    def white_balance_mode(self, mode: str):
+        """Sets the white balance mode of the camera
+
+        :param mode: One of "auto", "indoor", "outdoor", "auto tracing", "manual", "color temperature", "one push", or "one push trigger".
+            See the manual for an explanation of these modes.
+        """
+        modes = {
+            'auto': '35 00',
+            'indoor': '35 01',
+            'outdoor': '35 02',
+            'one push': '35 03',
+            'auto tracing': '35 04',
+            'manual': '35 05',
+            'color temperature': '35 20',
+            'one push trigger': '10 05'
+        }
+
+        mode = mode.lower()
+        if mode not in modes:
+            raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
+
+        self._send_command('04 ' + modes[mode])
 
     # gain
 
