@@ -3,9 +3,7 @@ from typing import Optional, Tuple
 
 from visca_over_ip.exceptions import ViscaException, NoQueryResponse
 
-
 SEQUENCE_NUM_MAX = 2 ** 32 - 1
-
 
 class Camera:
     """
@@ -46,7 +44,6 @@ class Camera:
 
         payload_bytes = preamble + bytearray.fromhex(command_hex) + terminator
         payload_length = len(preamble + payload_bytes + terminator).to_bytes(2, 'big')
-
 
         exception = None
         for retry_num in range(self.num_retries):
@@ -127,6 +124,15 @@ class Camera:
             except ViscaException as exc:
                 if exc.status_code != 0x41:
                     raise exc
+
+    def info_display(self, display_mode: bool):
+        """Sets the information display mode of the camera
+        :param display_mode: True for on, False for off
+        """
+        if display_mode:
+            self._send_command('7E 08 18 02')
+        else:
+            self._send_command('7E 08 18 03')
 
     def pantilt(self, pan_speed: int, tilt_speed: int, pan_position=None, tilt_position=None, relative=False):
         """Commands the camera to pan and/or tilt.
