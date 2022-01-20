@@ -4,6 +4,7 @@ from typing import Optional, Tuple
 from visca_over_ip.exceptions import ViscaException, NoQueryResponse
 
 SEQUENCE_NUM_MAX = 2 ** 32 - 1
+image_flip_enabled = False
 
 class Camera:
     """
@@ -260,6 +261,19 @@ class Camera:
         response = self._send_command('04 38', query=True)
         return modes[response[-1]]
 
+    # autofocus mode
+
+    # autofocus interval
+
+    def autofocus_sensitivity_low(self, sensitivity_low: bool):
+        """Sets the sensitivity of the autofocus to low
+        :param sensitivity_low: True for on, False for off
+        """
+        if sensitivity_low:
+            self._send_command('04 58 03')
+        else:
+            self._send_command('04 58 02')
+
     def manual_focus(self, speed: int):
         """Focuses near or far at the given speed.
         Set the focus mode to manual before calling this method.
@@ -279,6 +293,79 @@ class Camera:
             direction_hex = '3'
 
         self._send_command(f'04 08 {direction_hex}{speed_hex}')
+
+    def ir_correction(self, mode: bool):
+        """Sets the focus IR correction mode of the camera
+        :param value: True for IR correction mode, False for standard mode
+        """
+        if mode:
+            self._send_command('04 11 01')
+        else:
+            self._send_command('04 11 00')
+
+    # white balance
+
+    # gain
+
+    # rgain
+
+    # bgain
+
+    # color gain
+
+    # autoexposure
+
+    # shutter
+
+    # slow shutter
+
+    # iris
+
+    # brightness
+
+    # exposure compensation
+
+    # backlight compensation
+
+    # aperature
+
+    def flip_horizontal(self, flip_mode: bool):
+        """Sets the horizontal flip mode of the camera
+        :param value: True for horizontal flip mode, False for normal mode
+        """
+        if flip_mode:
+            self._send_command('04 61 02')
+        else:
+            self._send_command('04 61 03')
+
+    def flip_vertical(self, flip_mode: bool):
+        """Sets the vertical flip (mount) mode of the camera
+        :param value: True for vertical flip mode, False for normal mode
+        """
+        if flip_mode:
+            self._send_command('04 66 02')
+            image_flip_enabled = True
+        else:
+            self._send_command('04 66 03')
+            image_flip_enabled = False
+
+    def flip(self, horizontal: bool, vertical: bool):
+        """Sets the horizontal and vertical flip modes of the camera
+        :param horizontal: True for horizontal flip mode, False for normal mode
+        :param vertical: True for vertical flip mode, False for normal mode
+        """
+        if horizontal and vertical:
+            self._send_command('04 A4 03')
+        elif vertical:
+            self._send_command('04 A4 02')
+        elif horizontal:
+            self._send_command('04 A4 01')
+        else:
+            self._send_command('04 A4 00')
+
+    # noise reduction 2d
+
+    # noise reduction 3d
 
     def save_preset(self, preset_num: int):
         """Saves many of the camera's settings in one of 16 slots"""
@@ -315,3 +402,5 @@ class Camera:
         """:return: an unsigned integer representing the absolute zoom position"""
         response = self._send_command('04 47', query=True)
         return self._zero_padded_bytes_to_int(response[1:], signed=False)
+
+    # other inquiry commands
