@@ -327,19 +327,27 @@ class Camera:
 
         self._send_command('04 ' + modes[mode])
 
-    # gain
-
     # rgain
 
     # bgain
 
     # color gain
 
+    # gain
+
     # autoexposure
 
     # shutter
 
-    # slow shutter
+    # slow shutter 04 5A 02
+    def slow_shutter(self, mode: bool):
+        """Sets the slow shutter mode of the camera
+        :param mode: True for on, False for off
+        """
+        if mode:
+            self._send_command('04 5A 02')
+        else:
+            self._send_command('04 5A 03')
 
     # iris
 
@@ -347,7 +355,14 @@ class Camera:
 
     # exposure compensation
 
-    # backlight compensation
+    def backlight(self, mode: bool):
+        """Sets the backlight compensation mode of the camera
+        :param mode: True for on, False for off
+        """
+        if mode:
+            self._send_command('04 33 02')
+        else:
+            self._send_command('04 33 03')
 
     # aperature
 
@@ -388,6 +403,15 @@ class Camera:
     # noise reduction 2d
 
     # noise reduction 3d
+
+    def defog(self, mode: bool):
+        """Sets the defog mode of the camera, not supported on all cameras
+        :param value: True for defog mode, False for normal mode
+        """
+        if mode:
+            self._send_command('04 37 02 00')
+        else:
+            self._send_command('04 37 03 00')
 
     def save_preset(self, preset_num: int):
         """Saves many of the camera's settings in one of 16 slots"""
