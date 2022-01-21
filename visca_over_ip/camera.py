@@ -33,7 +33,6 @@ class Camera:
     def _send_command(self, command_hex: str, query=False) -> Optional[bytes]:
         """Constructs a message based ong the given payload, sends it to the camera,
         and blocks until an acknowledge or completion response has been received.
-
         :param command_hex: The body of the command as a hex string. For example: "00 02" to power on.
         :param query: Set to True if this is a query and not a standard command.
             This affects the message preamble and also ensures that a response will be returned and not None
@@ -138,7 +137,6 @@ class Camera:
     def pantilt(self, pan_speed: int, tilt_speed: int, pan_position=None, tilt_position=None, relative=False):
         """Commands the camera to pan and/or tilt.
         You must specify both pan_position and tilt_position OR specify neither
-
         :param pan_speed: -24 to 24 where negative numbers cause a left pan and 0 causes panning to stop
         :param tilt_speed: -24 to 24 where negative numbers cause a downward tilt and 0 causes tilting to stop
         :param pan_position: if specified, the camera will move this distance or go to this absolute position
@@ -228,6 +226,15 @@ class Camera:
 
         self._send_command('04 47 ' + ''.join(['0' + char for char in position_hex]))
 
+    def digital_zoom(self, digital_zoom_state: bool):
+        """Sets the digital zoom state of the camera
+        :param digital_zoom_state: True for on, False for off
+        """
+        if digital_zoom_state:
+            self._send_command('04 06 02')
+        else:
+            self._send_command('04 06 03')
+
     def increase_exposure_compensation(self):
         self._send_command('04 0E 02')
 
@@ -236,7 +243,6 @@ class Camera:
 
     def set_focus_mode(self, mode: str):
         """Sets the focus mode of the camera
-
         :param mode: One of "auto", "manual", "auto/manual", "one push trigger", or "infinity".
             See the manual for an explanation of these modes.
         """
@@ -261,9 +267,28 @@ class Camera:
         response = self._send_command('04 38', query=True)
         return modes[response[-1]]
 
-    # autofocus mode
+    def set_autofocus_mode(self, mode: str):
+        """Sets the autofocus mode of the camera
+        :param mode: One of "normal", "interval", or "one push trigger".
+            See the manual for an explanation of these modes.
+        """
+        modes = {
+            'normal': '0',
+            'interval': '1',
+            'zoom trigger': '2'
+        }
+        mode = mode.lower()
+        if mode not in modes:
+            raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
+        self._send_command('04 57 0' + modes[mode])
 
-    # autofocus interval
+    def set_autofocus_interval(self, active_time: int, interval_time: int):
+        """Sets the autofocus interval of the camera
+        :param active_time in seconds, interval_time in seconds.
+        """
+        if interval_time < 1 or interval_time > 255 or active_time < 1 or active_time > 255:
+            raise ValueError('The time must be between 1 and 255 seconds')
+        self._send_command('04 27 ' + f'{active_time:02x}' +' '+ f'{interval_time:02x}')
 
     def autofocus_sensitivity_low(self, sensitivity_low: bool):
         """Sets the sensitivity of the autofocus to low
@@ -277,7 +302,6 @@ class Camera:
     def manual_focus(self, speed: int):
         """Focuses near or far at the given speed.
         Set the focus mode to manual before calling this method.
-
         :param speed: -7 to 7 where positive integers focus near and negative integers focus far
         """
         if not isinstance(speed, int) or abs(speed) > 7:
@@ -306,7 +330,6 @@ class Camera:
     # white balance
     def white_balance_mode(self, mode: str):
         """Sets the white balance mode of the camera
-
         :param mode: One of "auto", "indoor", "outdoor", "auto tracing", "manual", "color temperature", "one push", or "one push trigger".
             See the manual for an explanation of these modes.
         """
