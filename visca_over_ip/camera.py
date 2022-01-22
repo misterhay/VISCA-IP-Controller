@@ -62,7 +62,6 @@ class Camera:
                     return response[1:-1]
                 elif not query:
                     return None
-
         if exception:
             raise exception
         else:
@@ -160,10 +159,8 @@ class Camera:
             raise ValueError('pan_speed and tilt_speed must be between -24 and 24 inclusive')
         if not all(isinstance(param, int) or param is None for param in speed_params + position_params):
             raise ValueError('All parameters must be ints or None')
-
         pan_speed_hex = f'{abs(pan_speed):02x}'
         tilt_speed_hex = f'{abs(tilt_speed):02x}'
-
         if None not in position_params:
             pan_position_hex = ' '.join(['0' + char for char in f'{pan_position:04x}'])
             tilt_position_hex = ' '.join(['0' + char for char in f'{tilt_position:04x}'])
@@ -288,16 +285,13 @@ class Camera:
         """
         if not isinstance(speed, int) or abs(speed) > 7:
             raise ValueError('The focus speed must be an integer from -7 to 7 inclusive')
-
         speed_hex = f'{abs(speed):x}'
-
         if speed == 0:
             direction_hex = '0'
         elif speed > 0:
             direction_hex = '2'
         else:
             direction_hex = '3'
-
         self._send_command(f'04 08 {direction_hex}{speed_hex}')
 
     def ir_correction(self, mode: bool):
@@ -309,7 +303,6 @@ class Camera:
         else:
             self._send_command('04 11 00')
 
-    # white balance
     def white_balance_mode(self, mode: str):
         """Sets the white balance mode of the camera
         :param mode: One of "auto", "indoor", "outdoor", "auto tracing", "manual", "color temperature", "one push", or "one push trigger".
@@ -462,7 +455,22 @@ class Camera:
         else:
             self._send_command('04 33 03')
 
-    # aperature
+    def set_aperture(self, aperture: int):
+        """Sets the aperture of the camera
+        :param aperture: 0-255
+        """
+        if not isinstance(aperture, int) or aperture < 0 or aperture > 255:
+            raise ValueError('The aperture must be an integer from 0 to 255 inclusive')
+        self._send_command('04 42 00 00 ' + f'{aperture:02x}')
+
+    def increase_aperture(self):
+        self._send_command('04 02 02')
+    
+    def decrease_aperture(self):
+        self._send_command('04 02 03')
+    
+    def reset_aperture(self):
+        self._send_command('04 02 00')
 
     def flip_horizontal(self, flip_mode: bool):
         """Sets the horizontal flip mode of the camera
