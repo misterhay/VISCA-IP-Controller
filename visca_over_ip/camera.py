@@ -383,9 +383,23 @@ class Camera:
 
     # color gain
 
-    # gain
+    def set_gain(self, gain: int):
+        """Sets the gain of the camera
+        :param gain: 0-255
+        """
+        if not isinstance(gain, int) or gain < 0 or gain > 255:
+            raise ValueError('The gain must be an integer from 0 to 255 inclusive')
+        self._send_command('04 4C 00 00 ' + f'{gain:02x}')
 
-    # autoexposure
+    def increase_gain(self):
+        self._send_command('04 0C 02')
+    
+    def decrease_gain(self):
+        self._send_command('04 0C 03')
+
+    def reset_gain(self):
+        self._send_command('04 0C 00')
+
     def autoexposure_mode(self, mode: str):
         """Sets the autoexposure mode of the camera
         :param mode: One of "auto", "manual", "shutter priority", "iris priority", or "bright".
