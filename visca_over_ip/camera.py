@@ -381,8 +381,6 @@ class Camera:
     def reset_white_balance_temperature(self):
         self._send_command('04 03 00')
 
-    def set_white_balance_mode(self, mode: str):
-
     # color gain
 
     # gain
