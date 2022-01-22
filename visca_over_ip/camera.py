@@ -381,7 +381,25 @@ class Camera:
     def reset_white_balance_temperature(self):
         self._send_command('04 03 00')
 
-    # color gain
+    def set_color_gain(self, color:str, gain: int):
+        """Sets the color gain of the camera
+        :param color: 'master', 'magenta', 'red', 'yellow', 'green', 'cyan', 'blue'
+        :param gain: 0-15; initial value is 4
+        """
+        colors = {
+            'master': '0',
+            'magenta': '1',
+            'red': '2',
+            'yellow': '3',
+            'green': '4',
+            'cyan': '5',
+            'blue': '6'
+        }
+        if color not in colors:
+            raise ValueError(f'"{color}" is not a valid color. Valid colors: {", ".join(colors.keys())}')
+        if not isinstance(gain, int) or gain < 0 or gain > 15:
+            raise ValueError('The gain must be an integer from 0 to 15 inclusive')
+        self._send_command('04 49 00 00 0' + colors[color] + f' {gain:02x}')
 
     def set_gain(self, gain: int):
         """Sets the gain of the camera
