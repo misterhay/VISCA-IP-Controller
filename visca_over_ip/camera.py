@@ -429,7 +429,22 @@ class Camera:
         self._send_command('04 39 0' + modes[mode])
 
     # shutter
+    def set_shutter(self, shutter: int):
+        """Sets the shutter of the camera
+        :param shutter: 0-21
+        """
+        if not isinstance(shutter, int) or shutter < 0 or shutter > 21:
+            raise ValueError('The shutter must be an integer from 0 to 21 inclusive')
+        self._send_command('04 4A 00 ' + f'{shutter:02x}')
 
+    def increase_shutter(self):
+        self._send_command('04 0A 02')
+    
+    def decrease_shutter(self):
+        self._send_command('04 0A 03')
+    
+    def reset_shutter(self):
+        self._send_command('04 0A 00')
 
     def slow_shutter(self, mode: bool):
         """Sets the slow shutter mode of the camera
@@ -440,7 +455,6 @@ class Camera:
         else:
             self._send_command('04 5A 03')
 
-    # iris
     def set_iris(self, iris: int):
         """Sets the iris of the camera
         :param iris: 0-17
