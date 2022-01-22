@@ -154,13 +154,10 @@ class Camera:
         """
         speed_params = [pan_speed, tilt_speed]
         position_params = [pan_position, tilt_position]
-
         if position_params.count(None) == 1:
             raise ValueError('You must specify both pan_position and tilt_position or nether')
-
         if abs(pan_speed) > 24 or abs(tilt_speed) > 24:
             raise ValueError('pan_speed and tilt_speed must be between -24 and 24 inclusive')
-
         if not all(isinstance(param, int) or param is None for param in speed_params + position_params):
             raise ValueError('All parameters must be ints or None')
 
@@ -204,7 +201,6 @@ class Camera:
         if not isinstance(speed, int) or abs(speed) > 7:
             raise ValueError('The zoom speed must be an integer from -7 to 7 inclusive')
         speed_hex = f'{abs(speed):x}'
-
         if speed == 0:
             direction_hex = '0'
         elif speed > 0:
@@ -219,7 +215,6 @@ class Camera:
         """
         position_int = round(position * 16384)
         position_hex = f'{position_int:04x}'
-
         self._send_command('04 47 ' + ''.join(['0' + char for char in position_hex]))
 
     def digital_zoom(self, digital_zoom_state: bool):
@@ -252,7 +247,6 @@ class Camera:
         mode = mode.lower()
         if mode not in modes:
             raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
-
         self._send_command('04 ' + modes[mode])
 
     def set_autofocus_mode(self, mode: str):
@@ -331,16 +325,63 @@ class Camera:
             'color temperature': '35 20',
             'one push trigger': '10 05'
         }
-
         mode = mode.lower()
         if mode not in modes:
             raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
-
         self._send_command('04 ' + modes[mode])
 
-    # rgain
+    def set_red_gain(self, gain: int):
+        """Sets the red gain of the camera
+        :param gain: 0-255
+        """
+        if not isinstance(gain, int) or gain < 0 or gain > 255:
+            raise ValueError('The gain must be an integer from 0 to 255 inclusive')
+        self._send_command('04 43 00 00 ' + f'{gain:02x}')
 
-    # bgain
+    def increase_red_gain(self):
+        self._send_command('04 03 02')
+
+    def decrease_red_gain(self):
+        self._send_command('04 03 03')
+
+    def reset_red_gain(self):
+        self._send_command('04 03 00')
+
+    def set_blue_gain(self, gain: int):
+        """Sets the blue gain of the camera
+        :param gain: 0-255
+        """
+        if not isinstance(gain, int) or gain < 0 or gain > 255:
+            raise ValueError('The gain must be an integer from 0 to 255 inclusive')
+        self._send_command('04 44 00 00 ' + f'{gain:02x}')
+
+    def increase_blue_gain(self):
+        self._send_command('04 04 02')
+
+    def decrease_blue_gain(self):
+        self._send_command('04 03 03')
+
+    def reset_blue_gain(self):
+        self._send_command('04 04 00')
+
+    def set_white_balance_temperature(self, temperature: int):
+        """Sets the white balance temperature of the camera
+        :param temperature: 0-255
+        """
+        if not isinstance(temperature, int) or temperature < 0 or temperature > 255:
+            raise ValueError('The temperature must be an integer from 0 to 255 inclusive')
+        self._send_command('04 43 00 20 ' + f'{temperature:02x}')
+
+    def increase_white_balance_temperature(self):
+        self._send_command('04 03 02')
+
+    def decrease_white_balance_temperature(self):
+        self._send_command('04 03 03')
+
+    def reset_white_balance_temperature(self):
+        self._send_command('04 03 00')
+
+    def set_white_balance_mode(self, mode: str):
 
     # color gain
 
