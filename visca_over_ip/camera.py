@@ -177,7 +177,6 @@ class Camera:
 
         else:
             payload_start = '06 01'
-
             def get_direction_hex(speed: int):
                 if speed > 0:
                     return '01'
@@ -185,7 +184,6 @@ class Camera:
                     return '02'
                 else:
                     return '03'
-
             self._send_command(
                 payload_start + pan_speed_hex + tilt_speed_hex +
                 get_direction_hex(pan_speed) + get_direction_hex(tilt_speed)
@@ -205,7 +203,6 @@ class Camera:
         """
         if not isinstance(speed, int) or abs(speed) > 7:
             raise ValueError('The zoom speed must be an integer from -7 to 7 inclusive')
-
         speed_hex = f'{abs(speed):x}'
 
         if speed == 0:
@@ -214,7 +211,6 @@ class Camera:
             direction_hex = '2'
         else:
             direction_hex = '3'
-
         self._send_command(f'04 07 {direction_hex}{speed_hex}')
     
     def zoom_to(self, position: float):
@@ -253,19 +249,11 @@ class Camera:
             'one push trigger': '18 01',
             'infinity': '18 02'
         }
-
         mode = mode.lower()
         if mode not in modes:
             raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
 
         self._send_command('04 ' + modes[mode])
-
-    def get_focus_mode(self) -> str:
-        """:return: either 'auto' or 'manual'"""
-        modes = {2: 'auto', 3: 'manual'}
-
-        response = self._send_command('04 38', query=True)
-        return modes[response[-1]]
 
     def set_autofocus_mode(self, mode: str):
         """Sets the autofocus mode of the camera
@@ -359,10 +347,26 @@ class Camera:
     # gain
 
     # autoexposure
+    def autoexposure_mode(self, mode: str):
+        """Sets the autoexposure mode of the camera
+        :param mode: One of "auto", "manual", "shutter priority", "iris priority", or "bright".
+            See the manual for an explanation of these modes.
+        """
+        modes = {
+            'auto': '0',
+            'manual': '3',
+            'shutter priority': 'A',
+            'iris priority': 'B',
+            'bright': 'D'
+        }
+        mode = mode.lower()
+        if mode not in modes:
+            raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
+        self._send_command('04 39 0' + modes[mode])
 
     # shutter
 
-    # slow shutter 04 5A 02
+
     def slow_shutter(self, mode: bool):
         """Sets the slow shutter mode of the camera
         :param mode: True for on, False for off
@@ -471,5 +475,11 @@ class Camera:
         """:return: an unsigned integer representing the absolute zoom position"""
         response = self._send_command('04 47', query=True)
         return self._zero_padded_bytes_to_int(response[1:], signed=False)
+
+    def get_focus_mode(self) -> str:
+        """:return: either 'auto' or 'manual'"""
+        modes = {2: 'auto', 3: 'manual'}
+        response = self._send_command('04 38', query=True)
+        return modes[response[-1]]
 
     # other inquiry commands
