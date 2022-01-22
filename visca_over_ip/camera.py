@@ -441,6 +441,22 @@ class Camera:
             self._send_command('04 5A 03')
 
     # iris
+    def set_iris(self, iris: int):
+        """Sets the iris of the camera
+        :param iris: 0-17
+        """
+        if not isinstance(iris, int) or iris < 0 or iris > 17:
+            raise ValueError('The iris must be an integer from 0 to 17 inclusive')
+        self._send_command('04 4B 00 00 ' + f'{iris:02x}')
+    
+    def increase_iris(self):
+        self._send_command('04 0B 02')
+
+    def decrease_iris(self):
+        self._send_command('04 0B 03')
+
+    def reset_iris(self):
+        self._send_command('04 0B 00')
 
     # brightness
 
