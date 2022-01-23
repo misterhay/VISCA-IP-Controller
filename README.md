@@ -2,4 +2,4 @@
 
 Python code for controlling PTZ cameras using VISCA commands over a local network.
 
-Ensure you have [Python](https://www.python.org/) installed, along with [Tkinter](https://www.tutorialspoint.com/how-to-install-tkinter-in-python), then run the script `control.py`.
+If you are looking for a graphical program to control a camera, use [VISCA IP Controller GUI](https://github.com/misterhay/VISCA-IP-Controller-GUI). For joystick control use [Visca Joystick](https://github.com/International-Anglican-Church/visca-joystick).
