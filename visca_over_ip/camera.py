@@ -17,7 +17,7 @@ class Camera:
     """
     def __init__(self, ip: str, port=52381):
         """:param ip: the IP address or hostname of the camera you want to talk to.
-        :param port: the port number to use.
+        :param port: the port number to use. 52381 is the default for most cameras.
         """
         self._location = (ip, port)
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # for UDP stuff
@@ -137,18 +137,18 @@ class Camera:
         """Commands the camera to pan and/or tilt.
         You must specify both pan_position and tilt_position OR specify neither
 
-        :param pan_speed: -24 to 24 where negative numbers cause a left pan and 0 causes panning to stop
-        :param tilt_speed: -24 to 24 where negative numbers cause a downward tilt and 0 causes tilting to stop
+        :param pan_speed: -24 to 24 where negative numbers cause a left pan, 0 causes panning to stop,
+            and positive numbers cause a right pan
+        :param tilt_speed: -24 to 24 where negative numbers cause a downward tilt, 0 causes tilting to stop,
+            and positive numbers cause an upward tilt.
         :param pan_position: if specified, the camera will move this distance or go to this absolute position
             depending on the value of `relative`.
             Valid values are integers by default between 0x2200 and 0xDE00.
             Camera users may set more restrictive pan limits for a camera.
-
         :param tilt_position: if specified, the camera will move this distance or go to this absolute position
             depending on the value of `relative`.
             Valid values are integers 0x1200 to 0xFC00 if image flip is on or 0xEE00 to 0x400 if image flip is off.
             Camera users may set more restrictive tilt limits for a camera
-
         :param relative: If set to True, the position will be relative instead of absolute.
 
         :raises ViscaException: if invalid values are specified for positions
@@ -197,7 +197,7 @@ class Camera:
     def zoom(self, speed: int):
         """Zooms out or in at the given speed.
 
-        :param speed: -7 to 7 where positive numbers zoom in and zero stops the zooming
+        :param speed: -7 to 7 where positive numbers zoom in, zero stops the zooming, and negative numbers zoom out.
         """
         if not isinstance(speed, int) or abs(speed) > 7:
             raise ValueError('The zoom speed must be an integer from -7 to 7 inclusive')
