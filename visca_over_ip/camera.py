@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 from visca_over_ip.exceptions import ViscaException, NoQueryResponse
 
 SEQUENCE_NUM_MAX = 2 ** 32 - 1
-image_flip_enabled = False
+
 
 class Camera:
     """
@@ -524,14 +524,12 @@ class Camera:
 
     def flip_vertical(self, flip_mode: bool):
         """Sets the vertical flip (mount) mode of the camera
-        :param value: True for vertical flip mode, False for normal mode
+        :param flip_mode: True for vertical flip mode, False for normal mode
         """
         if flip_mode:
             self._send_command('04 66 02')
-            image_flip_enabled = True
         else:
             self._send_command('04 66 03')
-            image_flip_enabled = False
 
     def flip(self, horizontal: bool, vertical: bool):
         """Sets the horizontal and vertical flip modes of the camera
