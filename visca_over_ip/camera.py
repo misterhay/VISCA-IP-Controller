@@ -428,7 +428,6 @@ class Camera:
             raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
         self._send_command('04 39 0' + modes[mode])
 
-    # shutter
     def set_shutter(self, shutter: int):
         """Sets the shutter of the camera
         :param shutter: 0-21
@@ -472,7 +471,19 @@ class Camera:
     def reset_iris(self):
         self._send_command('04 0B 00')
 
-    # brightness
+    def set_brightness(self, brightness: int):
+        """Sets the brightness of the camera
+        :param brightness: 0-255
+        """
+        if not isinstance(brightness, int) or brightness < 0 or brightness > 255:
+            raise ValueError('The brightness must be an integer from 0 to 255 inclusive')
+        self._send_command('04 4D 00 00 ' + f'{brightness:02x}')
+    
+    def increase_brightness(self):
+        self._send_command('04 0D 02')
+
+    def decrease_brightness(self):
+        self._send_command('04 0D 03')
 
     # exposure compensation
 
