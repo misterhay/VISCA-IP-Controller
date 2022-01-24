@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append('..')
+
 import visca_over_ip
 
 project = 'visca_over_ip'
