@@ -15,9 +15,9 @@ class Camera:
     If you wish to use multiple cameras, you will need to switch between them (use :meth:`close_connection`)
     or set them up to use different ports.
     """
-    def __init__(self, ip, port=52381):
+    def __init__(self, ip: str, port=52381):
         """:param ip: the IP address or hostname of the camera you want to talk to.
-        :param port: the port number to use.
+        :param port: the port number to use. 52381 is the default for most cameras.
         """
         self._location = (ip, port)
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # for UDP stuff
@@ -136,8 +136,11 @@ class Camera:
     def pantilt(self, pan_speed: int, tilt_speed: int, pan_position=None, tilt_position=None, relative=False):
         """Commands the camera to pan and/or tilt.
         You must specify both pan_position and tilt_position OR specify neither
-        :param pan_speed: -24 to 24 where negative numbers cause a left pan and 0 causes panning to stop
-        :param tilt_speed: -24 to 24 where negative numbers cause a downward tilt and 0 causes tilting to stop
+
+        :param pan_speed: -24 to 24 where negative numbers cause a left pan, 0 causes panning to stop,
+            and positive numbers cause a right pan
+        :param tilt_speed: -24 to 24 where negative numbers cause a downward tilt, 0 causes tilting to stop,
+            and positive numbers cause an upward tilt.
         :param pan_position: if specified, the camera will move this distance or go to this absolute position
             depending on the value of `relative`.
             Valid values are integers by default between 0x2200 and 0xDE00.
@@ -146,7 +149,7 @@ class Camera:
             depending on the value of `relative`.
             Valid values are integers 0x1200 to 0xFC00 if image flip is on or 0xEE00 to 0x400 if image flip is off.
             Camera users may set more restrictive tilt limits for a camera
-        :param relative: If set to True, the position will be relative instead of absolute (default).
+        :param relative: If set to True, the position will be relative instead of absolute.
 
         :raises ViscaException: if invalid values are specified for positions
         :raises ValueError: if invalid values are specified for speeds
@@ -193,7 +196,8 @@ class Camera:
 
     def zoom(self, speed: int):
         """Zooms out or in at the given speed.
-        :param speed: -7 to 7 where positive numbers zoom in and zero stops the zooming
+
+        :param speed: -7 to 7 where positive numbers zoom in, zero stops the zooming, and negative numbers zoom out.
         """
         if not isinstance(speed, int) or abs(speed) > 7:
             raise ValueError('The zoom speed must be an integer from -7 to 7 inclusive')
@@ -208,6 +212,7 @@ class Camera:
     
     def zoom_to(self, position: float):
         """Zooms to an absolute position
+
         :param position: 0-1, where 1 is zoomed all the way in
         """
         position_int = round(position * 16384)
@@ -231,6 +236,7 @@ class Camera:
 
     def set_focus_mode(self, mode: str):
         """Sets the focus mode of the camera
+
         :param mode: One of "auto", "manual", "auto/manual", "one push trigger", or "infinity".
             See the manual for an explanation of these modes.
         """
@@ -281,6 +287,7 @@ class Camera:
     def manual_focus(self, speed: int):
         """Focuses near or far at the given speed.
         Set the focus mode to manual before calling this method.
+
         :param speed: -7 to 7 where positive integers focus near and negative integers focus far
         """
         if not isinstance(speed, int) or abs(speed) > 7:
