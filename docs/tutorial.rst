@@ -14,7 +14,7 @@ Package Contents
 
 ``visca_over_ip`` exports two main classes that you'll interact with.
 They are :py:class:`visca_over_ip.Camera` which allows for control and querying of a camera with VISCA over IP,
-and its subclass :py:class:`visca_over_ip.CachingCamera` which offers some performance improvements with a few drawbacks.
+and its subclass :py:class:`visca_over_ip.CachingCamera` which offers some performance improvements with a few :ref:`drawbacks<caching_drawbacks>`.
 
 You can skip straight to the :doc:`camera` if you like API docs, or you can read the rest of this tutorial for some example usage.
 

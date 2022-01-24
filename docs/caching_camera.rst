@@ -38,6 +38,7 @@ Methods with caching behavior
 
 :py:meth:`CachingCamera.zoom`
 
+.. _caching_drawbacks:
 
 Drawbacks
 ---------
