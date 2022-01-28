@@ -8,13 +8,13 @@ See :doc:`tutorial` to get started.
     This package does not allow you to capture video or stills from the camera.
     It only allows you to control things like pan, tilt, zoom, and focus.
 
+`Github <https://github.com/misterhay/VISCA-IP-Controller>`_
+
+`PyPI <https://pypi.org/project/visca-over-ip/>`_
+
 .. toctree::
     :maxdepth: 2
 
     tutorial
     camera
     caching_camera
-
-.. _Github: https://github.com/misterhay/VISCA-IP-Controller
-
-.. _PyPI: TODO
