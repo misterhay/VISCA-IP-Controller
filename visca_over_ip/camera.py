@@ -1,7 +1,7 @@
 import socket
 from typing import Optional, Tuple
 
-from visca_over_ip.exceptions import ViscaException, NoQueryResponse
+from visca_over_ip.exceptions import ViscaException, NoResponse
 
 SEQUENCE_NUM_MAX = 2 ** 32 - 1
 
@@ -33,9 +33,10 @@ class Camera:
     def _send_command(self, command_hex: str, query=False) -> Optional[bytes]:
         """Constructs a message based ong the given payload, sends it to the camera,
         and blocks until an acknowledge or completion response has been received.
+
         :param command_hex: The body of the command as a hex string. For example: "00 02" to power on.
         :param query: Set to True if this is a query and not a standard command.
-            This affects the message preamble and also ensures that a response will be returned and not None
+            This affects the message preamble.
         :return: The body of the first response to the given command as bytes
         """
         payload_type = b'\x01\x00'
@@ -60,12 +61,11 @@ class Camera:
             else:
                 if response is not None:
                     return response[1:-1]
-                elif not query:
-                    return None
+
         if exception:
             raise exception
         else:
-            raise NoQueryResponse(f'Could not get a response after {self.num_retries} tries')
+            raise NoResponse(f'Could not get a response after {self.num_retries} tries')
 
     def _receive_response(self) -> Optional[bytes]:
         """Attempts to receive the response of the most recent command.

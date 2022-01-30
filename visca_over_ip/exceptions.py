@@ -16,5 +16,5 @@ class ViscaException(RuntimeError):
         super().__init__(f'Error when executing command: {self.description}')
 
 
-class NoQueryResponse(TimeoutError):
-    """Raised when a response cannot be obtained to a query after a number of retries"""
+class NoResponse(TimeoutError):
+    """Raised when a response cannot be obtained after a number of retries"""
