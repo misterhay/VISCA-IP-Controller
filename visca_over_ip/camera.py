@@ -158,22 +158,28 @@ class Camera:
         position_params = [pan_position, tilt_position]
         if position_params.count(None) == 1:
             raise ValueError('You must specify both pan_position and tilt_position or nether')
+
         if abs(pan_speed) > 24 or abs(tilt_speed) > 24:
             raise ValueError('pan_speed and tilt_speed must be between -24 and 24 inclusive')
+
         if not all(isinstance(param, int) or param is None for param in speed_params + position_params):
             raise ValueError('All parameters must be ints or None')
+
         pan_speed_hex = f'{abs(pan_speed):02x}'
         tilt_speed_hex = f'{abs(tilt_speed):02x}'
+
         if None not in position_params:
             pan_position_hex = ' '.join(['0' + char for char in f'{pan_position:04x}'])
             tilt_position_hex = ' '.join(['0' + char for char in f'{tilt_position:04x}'])
             relative_hex = '03' if relative else '02'
+
             self._send_command(
                 '06' + relative_hex + pan_speed_hex + tilt_speed_hex + pan_position_hex + tilt_position_hex
             )
 
         else:
             payload_start = '06 01'
+
             def get_direction_hex(speed: int):
                 if speed > 0:
                     return '01'
@@ -181,6 +187,7 @@ class Camera:
                     return '02'
                 else:
                     return '03'
+
             self._send_command(
                 payload_start + pan_speed_hex + tilt_speed_hex +
                 get_direction_hex(pan_speed) + get_direction_hex(tilt_speed)
@@ -201,13 +208,16 @@ class Camera:
         """
         if not isinstance(speed, int) or abs(speed) > 7:
             raise ValueError('The zoom speed must be an integer from -7 to 7 inclusive')
+
         speed_hex = f'{abs(speed):x}'
+
         if speed == 0:
             direction_hex = '0'
         elif speed > 0:
             direction_hex = '2'
         else:
             direction_hex = '3'
+
         self._send_command(f'04 07 {direction_hex}{speed_hex}')
     
     def zoom_to(self, position: float):
@@ -247,9 +257,11 @@ class Camera:
             'one push trigger': '18 01',
             'infinity': '18 02'
         }
+
         mode = mode.lower()
         if mode not in modes:
             raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
+
         self._send_command('04 ' + modes[mode])
 
     def set_autofocus_mode(self, mode: str):
@@ -262,9 +274,11 @@ class Camera:
             'interval': '1',
             'zoom trigger': '2'
         }
+
         mode = mode.lower()
         if mode not in modes:
             raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
+
         self._send_command('04 57 0' + modes[mode])
 
     def set_autofocus_interval(self, active_time: int, interval_time: int):
@@ -273,6 +287,7 @@ class Camera:
         """
         if interval_time < 1 or interval_time > 255 or active_time < 1 or active_time > 255:
             raise ValueError('The time must be between 1 and 255 seconds')
+
         self._send_command('04 27 ' + f'{active_time:02x}' +' '+ f'{interval_time:02x}')
 
     def autofocus_sensitivity_low(self, sensitivity_low: bool):
@@ -292,13 +307,16 @@ class Camera:
         """
         if not isinstance(speed, int) or abs(speed) > 7:
             raise ValueError('The focus speed must be an integer from -7 to 7 inclusive')
+
         speed_hex = f'{abs(speed):x}'
+
         if speed == 0:
             direction_hex = '0'
         elif speed > 0:
             direction_hex = '2'
         else:
             direction_hex = '3'
+
         self._send_command(f'04 08 {direction_hex}{speed_hex}')
 
     def ir_correction(self, mode: bool):
@@ -325,9 +343,11 @@ class Camera:
             'color temperature': '35 20',
             'one push trigger': '10 05'
         }
+
         mode = mode.lower()
         if mode not in modes:
             raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
+
         self._send_command('04 ' + modes[mode])
 
     def set_red_gain(self, gain: int):
@@ -336,6 +356,7 @@ class Camera:
         """
         if not isinstance(gain, int) or gain < 0 or gain > 255:
             raise ValueError('The gain must be an integer from 0 to 255 inclusive')
+
         self._send_command('04 43 00 00 ' + f'{gain:02x}')
 
     def increase_red_gain(self):
@@ -353,6 +374,7 @@ class Camera:
         """
         if not isinstance(gain, int) or gain < 0 or gain > 255:
             raise ValueError('The gain must be an integer from 0 to 255 inclusive')
+
         self._send_command('04 44 00 00 ' + f'{gain:02x}')
 
     def increase_blue_gain(self):
@@ -370,6 +392,7 @@ class Camera:
         """
         if not isinstance(temperature, int) or temperature < 0 or temperature > 255:
             raise ValueError('The temperature must be an integer from 0 to 255 inclusive')
+
         self._send_command('04 43 00 20 ' + f'{temperature:02x}')
 
     def increase_white_balance_temperature(self):
@@ -397,8 +420,10 @@ class Camera:
         }
         if color not in colors:
             raise ValueError(f'"{color}" is not a valid color. Valid colors: {", ".join(colors.keys())}')
+
         if not isinstance(gain, int) or gain < 0 or gain > 15:
             raise ValueError('The gain must be an integer from 0 to 15 inclusive')
+
         self._send_command('04 49 00 00 0' + colors[color] + f' {gain:02x}')
 
     def set_gain(self, gain: int):
@@ -407,6 +432,7 @@ class Camera:
         """
         if not isinstance(gain, int) or gain < 0 or gain > 255:
             raise ValueError('The gain must be an integer from 0 to 255 inclusive')
+
         self._send_command('04 4C 00 00 ' + f'{gain:02x}')
 
     def increase_gain(self):
@@ -431,8 +457,10 @@ class Camera:
             'bright': 'D'
         }
         mode = mode.lower()
+
         if mode not in modes:
             raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
+
         self._send_command('04 39 0' + modes[mode])
 
     def set_shutter(self, shutter: int):
@@ -441,6 +469,7 @@ class Camera:
         """
         if not isinstance(shutter, int) or shutter < 0 or shutter > 21:
             raise ValueError('The shutter must be an integer from 0 to 21 inclusive')
+
         self._send_command('04 4A 00 ' + f'{shutter:02x}')
 
     def increase_shutter(self):
@@ -467,6 +496,7 @@ class Camera:
         """
         if not isinstance(iris, int) or iris < 0 or iris > 17:
             raise ValueError('The iris must be an integer from 0 to 17 inclusive')
+
         self._send_command('04 4B 00 00 ' + f'{iris:02x}')
     
     def increase_iris(self):
@@ -484,6 +514,7 @@ class Camera:
         """
         if not isinstance(brightness, int) or brightness < 0 or brightness > 255:
             raise ValueError('The brightness must be an integer from 0 to 255 inclusive')
+
         self._send_command('04 4D 00 00 ' + f'{brightness:02x}')
     
     def increase_brightness(self):
@@ -509,6 +540,7 @@ class Camera:
         """
         if not isinstance(aperture, int) or aperture < 0 or aperture > 255:
             raise ValueError('The aperture must be an integer from 0 to 255 inclusive')
+
         self._send_command('04 42 00 00 ' + f'{aperture:02x}')
 
     def increase_aperture(self):
