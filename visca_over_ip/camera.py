@@ -169,8 +169,8 @@ class Camera:
         tilt_speed_hex = f'{abs(tilt_speed):02x}'
 
         if None not in position_params:
-            pan_position_hex = ' '.join(['0' + char for char in f'{pan_position:04x}'])
-            tilt_position_hex = ' '.join(['0' + char for char in f'{tilt_position:04x}'])
+            pan_position_hex = ' '.join(['0' + char for char in f'{(pan_position & 0xFFFF):04x}'])
+            tilt_position_hex = ' '.join(['0' + char for char in f'{(tilt_position & 0xFFF):04x}'])
             relative_hex = '03' if relative else '02'
 
             self._send_command(
