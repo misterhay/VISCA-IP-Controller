@@ -162,7 +162,7 @@ class Camera:
         if abs(pan_speed) > 24 or abs(tilt_speed) > 24:
             raise ValueError('pan_speed and tilt_speed must be between -24 and 24 inclusive')
 
-        if pan_position not in range(-2 ** 16, (2 ** 16) - 1) or tilt_position not in range(-2 ** 16, (2 ** 16) - 1):
+        if (pan_position is not None and pan_position not in range(-2 ** 16, (2 ** 16) - 1)) or (tilt_position is not None and tilt_position not in range(-2 ** 16, (2 ** 16) - 1)):
             raise ValueError('pan_position and tilt_position must be a 16-bit signed int')
 
         if not all(isinstance(param, int) or param is None for param in speed_params + position_params):
