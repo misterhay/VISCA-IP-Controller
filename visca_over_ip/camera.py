@@ -281,6 +281,32 @@ class Camera:
 
         self._send_command('04 57 0' + modes[mode])
 
+    def set_af_sense(self, mode: str):
+        modes = {
+            'high': '1',
+            'normal': '2',
+            'low': '3'
+        }
+
+        mode = mode.lower()
+        if mode not in modes:
+            raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
+
+        self._send_command('04 58 0' + modes[mode])
+
+    def set_af_zone(self, mode: str):
+        modes = {
+            'top': '0',
+            'center': '1',
+            'bottom': '2'
+        }
+
+        mode = mode.lower()
+        if mode not in modes:
+            raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
+
+        self._send_command('04 AA 0' + modes[mode])
+
     def set_autofocus_interval(self, active_time: int, interval_time: int):
         """Sets the autofocus interval of the camera
         :param active_time in seconds, interval_time in seconds.
@@ -470,7 +496,7 @@ class Camera:
         if not isinstance(shutter, int) or shutter < 0 or shutter > 21:
             raise ValueError('The shutter must be an integer from 0 to 21 inclusive')
 
-        self._send_command('04 4A 00 ' + f'{shutter:02x}')
+        self._send_command('04 4A 00 00 00 ' + f'{shutter:02x}')
 
     def increase_shutter(self):
         self._send_command('04 0A 02')
