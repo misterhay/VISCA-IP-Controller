@@ -137,18 +137,19 @@ class Camera:
         """Commands the camera to pan and/or tilt.
         You must specify both pan_position and tilt_position OR specify neither
 
-        :param pan_speed: -24 to 24 where negative numbers cause a left pan, 0 causes panning to stop,
-            and positive numbers cause a right pan
+        :param pan_speed: -24 to 24 where negative numbers cause a right pan, 0 causes panning to stop,
+            and positive numbers cause a left pan
         :param tilt_speed: -24 to 24 where negative numbers cause a downward tilt, 0 causes tilting to stop,
             and positive numbers cause an upward tilt.
         :param pan_position: if specified, the camera will move this distance or go to this absolute position
             depending on the value of `relative`.
-            Valid values are integers by default between 0x2200 and 0xDE00.
-            Camera users may set more restrictive pan limits for a camera.
+            Should be a signed integer where 0 is the center of the range.
+            The camera will stop panning when numbers reach a high enough magnitude, but will not wrap around.
+            The pan limits are different for different models of camera and can be tightened by the user.
         :param tilt_position: if specified, the camera will move this distance or go to this absolute position
             depending on the value of `relative`.
-            Valid values are integers 0x1200 to 0xFC00 if image flip is on or 0xEE00 to 0x400 if image flip is off.
-            Camera users may set more restrictive tilt limits for a camera
+            The camera will stop tilting when number reach a high enough magnitude, but will not wrap around.
+            The tilt limits are different for different models of camera and can be tightened by the user.
         :param relative: If set to True, the position will be relative instead of absolute.
 
         :raises ViscaException: if invalid values are specified for positions
@@ -169,21 +170,24 @@ class Camera:
         tilt_speed_hex = f'{abs(tilt_speed):02x}'
 
         if None not in position_params:
-            pan_position_hex = ' '.join(['0' + char for char in f'{pan_position:04x}'])
-            tilt_position_hex = ' '.join(['0' + char for char in f'{tilt_position:04x}'])
+            def encode(position: int):
+                """Converts a signed integer to hex with each nibble seperated by a 0"""
+                pos_hex = position.to_bytes(2, 'big', signed=True).hex()
+                return ' '.join(['0' + char for char in pos_hex])
+
             relative_hex = '03' if relative else '02'
 
             self._send_command(
-                '06' + relative_hex + pan_speed_hex + tilt_speed_hex + pan_position_hex + tilt_position_hex
+                '06' + relative_hex + pan_speed_hex + tilt_speed_hex + encode(pan_position) + encode(tilt_position)
             )
 
         else:
             payload_start = '06 01'
 
             def get_direction_hex(speed: int):
-                if speed > 0:
-                    return '01'
                 if speed < 0:
+                    return '01'
+                if speed > 0:
                     return '02'
                 else:
                     return '03'
