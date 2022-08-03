@@ -1,9 +1,8 @@
-import socket
-from typing import Optional, Tuple
+from typing import Tuple
 
-from visca_over_ip.exceptions import ViscaException, NoQueryResponse
-
-SEQUENCE_NUM_MAX = 2 ** 32 - 1
+from visca_over_ip.connection import Connection
+from visca_over_ip.message import Message as Msg
+from visca_over_ip.exceptions import ViscaException
 
 
 class Camera:
@@ -19,106 +18,23 @@ class Camera:
         """:param ip: the IP address or hostname of the camera you want to talk to.
         :param port: the port number to use. 52381 is the default for most cameras.
         """
-        self._location = (ip, port)
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # for UDP stuff
-        self._sock.bind(('', port))
-        self._sock.settimeout(0.1)
-
-        self.num_missed_responses = 0
-        self.sequence_number = 0  # This number is encoded in each message and incremented after sending each message
-        self.num_retries = 5
-        self.reset_sequence_number()
-        self._send_command('00 01')  # clear the camera's interface socket
-
-    def _send_command(self, command_hex: str, query=False) -> Optional[bytes]:
-        """Constructs a message based ong the given payload, sends it to the camera,
-        and blocks until an acknowledge or completion response has been received.
-        :param command_hex: The body of the command as a hex string. For example: "00 02" to power on.
-        :param query: Set to True if this is a query and not a standard command.
-            This affects the message preamble and also ensures that a response will be returned and not None
-        :return: The body of the first response to the given command as bytes
-        """
-        payload_type = b'\x01\x00'
-        preamble = b'\x81' + (b'\x09' if query else b'\x01')
-        terminator = b'\xff'
-
-        payload_bytes = preamble + bytearray.fromhex(command_hex) + terminator
-        payload_length = len(payload_bytes).to_bytes(2, 'big')
-
-        exception = None
-        for retry_num in range(self.num_retries):
-            self._increment_sequence_number()
-            sequence_bytes = self.sequence_number.to_bytes(4, 'big')
-            message = payload_type + payload_length + sequence_bytes + payload_bytes
-
-            self._sock.sendto(message, self._location)
-
-            try:
-                response = self._receive_response()
-            except ViscaException as exc:
-                exception = exc
-            else:
-                if response is not None:
-                    return response[1:-1]
-                elif not query:
-                    return None
-        if exception:
-            raise exception
-        else:
-            raise NoQueryResponse(f'Could not get a response after {self.num_retries} tries')
-
-    def _receive_response(self) -> Optional[bytes]:
-        """Attempts to receive the response of the most recent command.
-        Sometimes we don't get the response because this is UDP.
-        In that case we just increment num_missed_responses and move on.
-        :raises ViscaException: if the response if an error and not an acknowledge or completion
-        """
-        while True:
-            try:
-                response = self._sock.recv(32)
-                response_sequence_number = int.from_bytes(response[4:8], 'big')
-
-                if response_sequence_number < self.sequence_number:
-                    continue
-                else:
-                    response_payload = response[8:]
-                    if len(response_payload) > 2:
-                        status_byte = response_payload[1]
-                        if status_byte >> 4 not in [5, 4]:
-                            raise ViscaException(response_payload)
-                        else:
-                            return response_payload
-
-            except socket.timeout:  # Occasionally we don't get a response because this is UDP
-                self.num_missed_responses += 1
-                break
-
-    def reset_sequence_number(self):
-        message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
-        self._sock.sendto(message, self._location)
-        self._receive_response()
-        self.sequence_number = 1
-
-    def _increment_sequence_number(self):
-        self.sequence_number += 1
-        if self.sequence_number > SEQUENCE_NUM_MAX:
-            self.sequence_number = 0
+        self.conn = Connection(ip, port)
 
     def close_connection(self):
         """Only one camera can be bound to a socket at once.
         If you want to connect to another camera which uses the same communication port,
         first call this method on the first camera.
         """
-        self._sock.close()
+        self.conn.close()
 
     def set_power(self, power_state: bool):
         """Powers on or off the camera based on the value of power_state"""
         for _ in range(4):
             try:
                 if power_state:
-                    self._send_command('04 00 02')
+                    self.conn.send(Msg('04 00 02'))
                 else:
-                    self._send_command('04 00 03')
+                    self.conn.send(Msg('04 00 03'))
 
             except ViscaException as exc:
                 if exc.status_code != 0x41:
@@ -129,9 +45,9 @@ class Camera:
         :param display_mode: True for on, False for off
         """
         if display_mode:
-            self._send_command('7E 08 18 02')
+            self.conn.send(Msg('7E 08 18 02'))
         else:
-            self._send_command('7E 08 18 03')
+            self.conn.send(Msg('7E 08 18 03'))
 
     def pantilt(self, pan_speed: int, tilt_speed: int, pan_position=None, tilt_position=None, relative=False):
         """Commands the camera to pan and/or tilt.
@@ -177,9 +93,9 @@ class Camera:
 
             relative_hex = '03' if relative else '02'
 
-            self._send_command(
+            self.conn.send(Msg(
                 '06' + relative_hex + pan_speed_hex + tilt_speed_hex + encode(pan_position) + encode(tilt_position)
-            )
+            ))
 
         else:
             payload_start = '06 01'
@@ -192,18 +108,18 @@ class Camera:
                 else:
                     return '03'
 
-            self._send_command(
+            self.conn.send(Msg(
                 payload_start + pan_speed_hex + tilt_speed_hex +
                 get_direction_hex(pan_speed) + get_direction_hex(tilt_speed)
-            )
+            ))
 
     def pantilt_home(self):
         """Moves the camera to the home position"""
-        self._send_command('06 04')
+        self.conn.send(Msg('06 04'))
 
     def pantilt_reset(self):
         """Moves the camera to the reset position"""
-        self._send_command('06 05')
+        self.conn.send(Msg('06 05'))
 
     def zoom(self, speed: int):
         """Zooms out or in at the given speed.
@@ -222,7 +138,7 @@ class Camera:
         else:
             direction_hex = '3'
 
-        self._send_command(f'04 07 {direction_hex}{speed_hex}')
+        self.conn.send(Msg(f'04 07 {direction_hex}{speed_hex}'))
     
     def zoom_to(self, position: float):
         """Zooms to an absolute position
@@ -231,22 +147,22 @@ class Camera:
         """
         position_int = round(position * 16384)
         position_hex = f'{position_int:04x}'
-        self._send_command('04 47 ' + ''.join(['0' + char for char in position_hex]))
+        self.conn.send(Msg('04 47 ' + ''.join(['0' + char for char in position_hex])))
 
     def digital_zoom(self, digital_zoom_state: bool):
         """Sets the digital zoom state of the camera
         :param digital_zoom_state: True for on, False for off
         """
         if digital_zoom_state:
-            self._send_command('04 06 02')
+            self.conn.send(Msg('04 06 02'))
         else:
-            self._send_command('04 06 03')
+            self.conn.send(Msg('04 06 03'))
 
     def increase_exposure_compensation(self):
-        self._send_command('04 0E 02')
+        self.conn.send(Msg('04 0E 02'))
 
     def decrease_exposure_compensation(self):
-        self._send_command('04 0E 03')
+        self.conn.send(Msg('04 0E 03'))
 
     def set_focus_mode(self, mode: str):
         """Sets the focus mode of the camera
@@ -266,7 +182,7 @@ class Camera:
         if mode not in modes:
             raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
 
-        self._send_command('04 ' + modes[mode])
+        self.conn.send(Msg('04 ' + modes[mode]))
 
     def set_autofocus_mode(self, mode: str):
         """Sets the autofocus mode of the camera
@@ -283,7 +199,7 @@ class Camera:
         if mode not in modes:
             raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
 
-        self._send_command('04 57 0' + modes[mode])
+        self.conn.send(Msg('04 57 0' + modes[mode]))
 
     def set_autofocus_interval(self, active_time: int, interval_time: int):
         """Sets the autofocus interval of the camera
@@ -292,16 +208,16 @@ class Camera:
         if interval_time < 1 or interval_time > 255 or active_time < 1 or active_time > 255:
             raise ValueError('The time must be between 1 and 255 seconds')
 
-        self._send_command('04 27 ' + f'{active_time:02x}' +' '+ f'{interval_time:02x}')
+        self.conn.send(Msg('04 27 ' + f'{active_time:02x}' +' '+ f'{interval_time:02x}'))
 
     def autofocus_sensitivity_low(self, sensitivity_low: bool):
         """Sets the sensitivity of the autofocus to low
         :param sensitivity_low: True for on, False for off
         """
         if sensitivity_low:
-            self._send_command('04 58 03')
+            self.conn.send(Msg('04 58 03'))
         else:
-            self._send_command('04 58 02')
+            self.conn.send(Msg('04 58 02'))
 
     def manual_focus(self, speed: int):
         """Focuses near or far at the given speed.
@@ -321,16 +237,16 @@ class Camera:
         else:
             direction_hex = '3'
 
-        self._send_command(f'04 08 {direction_hex}{speed_hex}')
+        self.conn.send(Msg(f'04 08 {direction_hex}{speed_hex}'))
 
     def ir_correction(self, mode: bool):
         """Sets the focus IR correction mode of the camera
         :param value: True for IR correction mode, False for standard mode
         """
         if mode:
-            self._send_command('04 11 01')
+            self.conn.send(Msg('04 11 01'))
         else:
-            self._send_command('04 11 00')
+            self.conn.send(Msg('04 11 00'))
 
     def white_balance_mode(self, mode: str):
         """Sets the white balance mode of the camera
@@ -352,7 +268,7 @@ class Camera:
         if mode not in modes:
             raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
 
-        self._send_command('04 ' + modes[mode])
+        self.conn.send(Msg('04 ' + modes[mode]))
 
     def set_red_gain(self, gain: int):
         """Sets the red gain of the camera
@@ -361,16 +277,16 @@ class Camera:
         if not isinstance(gain, int) or gain < 0 or gain > 255:
             raise ValueError('The gain must be an integer from 0 to 255 inclusive')
 
-        self._send_command('04 43 00 00 ' + f'{gain:02x}')
+        self.conn.send(Msg('04 43 00 00 ' + f'{gain:02x}'))
 
     def increase_red_gain(self):
-        self._send_command('04 03 02')
+        self.conn.send(Msg('04 03 02'))
 
     def decrease_red_gain(self):
-        self._send_command('04 03 03')
+        self.conn.send(Msg('04 03 03'))
 
     def reset_red_gain(self):
-        self._send_command('04 03 00')
+        self.conn.send(Msg('04 03 00'))
 
     def set_blue_gain(self, gain: int):
         """Sets the blue gain of the camera
@@ -379,16 +295,16 @@ class Camera:
         if not isinstance(gain, int) or gain < 0 or gain > 255:
             raise ValueError('The gain must be an integer from 0 to 255 inclusive')
 
-        self._send_command('04 44 00 00 ' + f'{gain:02x}')
+        self.conn.send(Msg('04 44 00 00 ' + f'{gain:02x}'))
 
     def increase_blue_gain(self):
-        self._send_command('04 04 02')
+        self.conn.send(Msg('04 04 02'))
 
     def decrease_blue_gain(self):
-        self._send_command('04 03 03')
+        self.conn.send(Msg('04 03 03'))
 
     def reset_blue_gain(self):
-        self._send_command('04 04 00')
+        self.conn.send(Msg('04 04 00'))
 
     def set_white_balance_temperature(self, temperature: int):
         """Sets the white balance temperature of the camera
@@ -397,16 +313,16 @@ class Camera:
         if not isinstance(temperature, int) or temperature < 0 or temperature > 255:
             raise ValueError('The temperature must be an integer from 0 to 255 inclusive')
 
-        self._send_command('04 43 00 20 ' + f'{temperature:02x}')
+        self.conn.send(Msg('04 43 00 20 ' + f'{temperature:02x}'))
 
     def increase_white_balance_temperature(self):
-        self._send_command('04 03 02')
+        self.conn.send(Msg('04 03 02'))
 
     def decrease_white_balance_temperature(self):
-        self._send_command('04 03 03')
+        self.conn.send(Msg('04 03 03'))
 
     def reset_white_balance_temperature(self):
-        self._send_command('04 03 00')
+        self.conn.send(Msg('04 03 00'))
 
     def set_color_gain(self, color:str, gain: int):
         """Sets the color gain of the camera
@@ -428,7 +344,7 @@ class Camera:
         if not isinstance(gain, int) or gain < 0 or gain > 15:
             raise ValueError('The gain must be an integer from 0 to 15 inclusive')
 
-        self._send_command('04 49 00 00 0' + colors[color] + f' {gain:02x}')
+        self.conn.send(Msg('04 49 00 00 0' + colors[color] + f' {gain:02x}'))
 
     def set_gain(self, gain: int):
         """Sets the gain of the camera
@@ -437,16 +353,16 @@ class Camera:
         if not isinstance(gain, int) or gain < 0 or gain > 255:
             raise ValueError('The gain must be an integer from 0 to 255 inclusive')
 
-        self._send_command('04 4C 00 00 ' + f'{gain:02x}')
+        self.conn.send(Msg('04 4C 00 00 ' + f'{gain:02x}'))
 
     def increase_gain(self):
-        self._send_command('04 0C 02')
+        self.conn.send(Msg('04 0C 02'))
     
     def decrease_gain(self):
-        self._send_command('04 0C 03')
+        self.conn.send(Msg('04 0C 03'))
 
     def reset_gain(self):
-        self._send_command('04 0C 00')
+        self.conn.send(Msg('04 0C 00'))
 
     def autoexposure_mode(self, mode: str):
         """Sets the autoexposure mode of the camera
@@ -465,7 +381,7 @@ class Camera:
         if mode not in modes:
             raise ValueError(f'"{mode}" is not a valid mode. Valid modes: {", ".join(modes.keys())}')
 
-        self._send_command('04 39 0' + modes[mode])
+        self.conn.send(Msg('04 39 0' + modes[mode]))
 
     def set_shutter(self, shutter: int):
         """Sets the shutter of the camera
@@ -474,25 +390,25 @@ class Camera:
         if not isinstance(shutter, int) or shutter < 0 or shutter > 21:
             raise ValueError('The shutter must be an integer from 0 to 21 inclusive')
 
-        self._send_command('04 4A 00 ' + f'{shutter:02x}')
+        self.conn.send(Msg('04 4A 00 ' + f'{shutter:02x}'))
 
     def increase_shutter(self):
-        self._send_command('04 0A 02')
+        self.conn.send(Msg('04 0A 02'))
     
     def decrease_shutter(self):
-        self._send_command('04 0A 03')
+        self.conn.send(Msg('04 0A 03'))
     
     def reset_shutter(self):
-        self._send_command('04 0A 00')
+        self.conn.send(Msg('04 0A 00'))
 
     def slow_shutter(self, mode: bool):
         """Sets the slow shutter mode of the camera
         :param mode: True for on, False for off
         """
         if mode:
-            self._send_command('04 5A 02')
+            self.conn.send(Msg('04 5A 02'))
         else:
-            self._send_command('04 5A 03')
+            self.conn.send(Msg('04 5A 03'))
 
     def set_iris(self, iris: int):
         """Sets the iris of the camera
@@ -501,16 +417,16 @@ class Camera:
         if not isinstance(iris, int) or iris < 0 or iris > 17:
             raise ValueError('The iris must be an integer from 0 to 17 inclusive')
 
-        self._send_command('04 4B 00 00 ' + f'{iris:02x}')
+        self.conn.send(Msg('04 4B 00 00 ' + f'{iris:02x}'))
     
     def increase_iris(self):
-        self._send_command('04 0B 02')
+        self.conn.send(Msg('04 0B 02'))
 
     def decrease_iris(self):
-        self._send_command('04 0B 03')
+        self.conn.send(Msg('04 0B 03'))
 
     def reset_iris(self):
-        self._send_command('04 0B 00')
+        self.conn.send(Msg('04 0B 00'))
 
     def set_brightness(self, brightness: int):
         """Sets the brightness of the camera
@@ -519,13 +435,13 @@ class Camera:
         if not isinstance(brightness, int) or brightness < 0 or brightness > 255:
             raise ValueError('The brightness must be an integer from 0 to 255 inclusive')
 
-        self._send_command('04 4D 00 00 ' + f'{brightness:02x}')
+        self.conn.send(Msg('04 4D 00 00 ' + f'{brightness:02x}'))
     
     def increase_brightness(self):
-        self._send_command('04 0D 02')
+        self.conn.send(Msg('04 0D 02'))
 
     def decrease_brightness(self):
-        self._send_command('04 0D 03')
+        self.conn.send(Msg('04 0D 03'))
 
     # exposure compensation
 
@@ -534,9 +450,9 @@ class Camera:
         :param mode: True for on, False for off
         """
         if mode:
-            self._send_command('04 33 02')
+            self.conn.send(Msg('04 33 02'))
         else:
-            self._send_command('04 33 03')
+            self.conn.send(Msg('04 33 03'))
 
     def set_aperture(self, aperture: int):
         """Sets the aperture of the camera
@@ -545,34 +461,34 @@ class Camera:
         if not isinstance(aperture, int) or aperture < 0 or aperture > 255:
             raise ValueError('The aperture must be an integer from 0 to 255 inclusive')
 
-        self._send_command('04 42 00 00 ' + f'{aperture:02x}')
+        self.conn.send(Msg('04 42 00 00 ' + f'{aperture:02x}'))
 
     def increase_aperture(self):
-        self._send_command('04 02 02')
+        self.conn.send(Msg('04 02 02'))
     
     def decrease_aperture(self):
-        self._send_command('04 02 03')
+        self.conn.send(Msg('04 02 03'))
     
     def reset_aperture(self):
-        self._send_command('04 02 00')
+        self.conn.send(Msg('04 02 00'))
 
     def flip_horizontal(self, flip_mode: bool):
         """Sets the horizontal flip mode of the camera
         :param value: True for horizontal flip mode, False for normal mode
         """
         if flip_mode:
-            self._send_command('04 61 02')
+            self.conn.send(Msg('04 61 02'))
         else:
-            self._send_command('04 61 03')
+            self.conn.send(Msg('04 61 03'))
 
     def flip_vertical(self, flip_mode: bool):
         """Sets the vertical flip (mount) mode of the camera
         :param flip_mode: True for vertical flip mode, False for normal mode
         """
         if flip_mode:
-            self._send_command('04 66 02')
+            self.conn.send(Msg('04 66 02'))
         else:
-            self._send_command('04 66 03')
+            self.conn.send(Msg('04 66 03'))
 
     def flip(self, horizontal: bool, vertical: bool):
         """Sets the horizontal and vertical flip modes of the camera
@@ -580,13 +496,13 @@ class Camera:
         :param vertical: True for vertical flip mode, False for normal mode
         """
         if horizontal and vertical:
-            self._send_command('04 A4 03')
+            self.conn.send(Msg('04 A4 03'))
         elif vertical:
-            self._send_command('04 A4 02')
+            self.conn.send(Msg('04 A4 02'))
         elif horizontal:
-            self._send_command('04 A4 01')
+            self.conn.send(Msg('04 A4 01'))
         else:
-            self._send_command('04 A4 00')
+            self.conn.send(Msg('04 A4 00'))
 
     # noise reduction 2d
 
@@ -597,23 +513,23 @@ class Camera:
         :param value: True for defog mode, False for normal mode
         """
         if mode:
-            self._send_command('04 37 02 00')
+            self.conn.send(Msg('04 37 02 00'))
         else:
-            self._send_command('04 37 03 00')
+            self.conn.send(Msg('04 37 03 00'))
 
     def save_preset(self, preset_num: int):
         """Saves many of the camera's settings in one of 16 slots"""
         if not 0 <= preset_num <= 15:
             raise ValueError('Preset num must be 0-15 inclusive')
 
-        self._send_command(f'04 3F 01 0{preset_num:x}')
+        self.conn.send(Msg(f'04 3F 01 0{preset_num:x}'))
 
     def recall_preset(self, preset_num: int):
         """Instructs the camera to recall one of the 16 saved presets"""
         if not 0 <= preset_num <= 16:
             raise ValueError('Preset num must be 0-15 inclusive')
 
-        self._send_command(f'04 3F 02 0{preset_num:x}')
+        self.conn.send(Msg(f'04 3F 02 0{preset_num:x}'))
 
     @staticmethod
     def _zero_padded_bytes_to_int(zero_padded: bytes, signed=True) -> int:
@@ -626,7 +542,7 @@ class Camera:
 
     def get_pantilt_position(self) -> Tuple[int, int]:
         """:return: two signed integers representing the absolute pan and tilt positions respectively"""
-        response = self._send_command('06 12', query=True)
+        response = self.conn.send(Msg('06 12', query=True))
         pan_bytes = response[1:5]
         tilt_bytes = response[5:9]
 
@@ -634,13 +550,13 @@ class Camera:
 
     def get_zoom_position(self) -> int:
         """:return: an unsigned integer representing the absolute zoom position"""
-        response = self._send_command('04 47', query=True)
+        response = self.conn.send(Msg('04 47', query=True))
         return self._zero_padded_bytes_to_int(response[1:], signed=False)
 
     def get_focus_mode(self) -> str:
         """:return: either 'auto' or 'manual'"""
         modes = {2: 'auto', 3: 'manual'}
-        response = self._send_command('04 38', query=True)
+        response = self.conn.send(Msg('04 38', query=True))
         return modes[response[-1]]
 
     # other inquiry commands
