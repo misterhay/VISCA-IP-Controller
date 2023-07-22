@@ -164,7 +164,7 @@ class Camera:
             raise ValueError('pan_speed and tilt_speed must be between -24 and 24 inclusive')
 
         if not all(isinstance(param, int) or param is None for param in speed_params + position_params):
-            raise ValueError('All parameters must be ints or None')
+            raise ValueError('All parameters must be integers or None')
 
         pan_speed_hex = f'{abs(pan_speed):02x}'
         tilt_speed_hex = f'{abs(tilt_speed):02x}'
@@ -627,9 +627,8 @@ class Camera:
     def get_pantilt_position(self) -> Tuple[int, int]:
         """:return: two signed integers representing the absolute pan and tilt positions respectively"""
         response = self._send_command('06 12', query=True)
-        pan_bytes = response[1:5]
-        tilt_bytes = response[5:9]
-
+        pan_bytes = response[2:6]
+        tilt_bytes = response[6:10]
         return self._zero_padded_bytes_to_int(pan_bytes), self._zero_padded_bytes_to_int(tilt_bytes)
 
     def get_zoom_position(self) -> int:
