@@ -21,7 +21,8 @@ class Camera:
         """
         self._location = (ip, port)
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # for UDP stuff
-        self._sock.bind(('', port))
+        self._sock.bind(('', 0))
+        self._port = self._sock.getsockname()[1]  
         self._sock.settimeout(0.1)
 
         self.num_missed_responses = 0
