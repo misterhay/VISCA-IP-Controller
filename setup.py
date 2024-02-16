@@ -11,7 +11,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='Yook74 and misterhay',
-    author_email='andrewBlomen@gmail.com',
-    url='https://github.com/Yook74/VISCA-IP-Controller',
+    author_email='misterhay@gmail.com',
+    url='https://github.com/misterhay/VISCA-IP-Controller',
     packages=['visca_over_ip'],
 )
