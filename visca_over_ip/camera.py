@@ -318,9 +318,9 @@ class Camera:
         if speed == 0:
             direction_hex = '0'
         elif speed > 0:
-            direction_hex = '2'
-        else:
             direction_hex = '3'
+        else:
+            direction_hex = '2'
 
         self._send_command(f'04 08 {direction_hex}{speed_hex}')
 
