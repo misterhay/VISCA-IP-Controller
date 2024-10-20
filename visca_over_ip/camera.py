@@ -29,7 +29,10 @@ class Camera:
         self.sequence_number = 0  # This number is encoded in each message and incremented after sending each message
         self.num_retries = 5
         self.reset_sequence_number()
-        self._send_command('00 01')  # clear the camera's interface socket
+        try:
+            self._send_command('00 01')  # clear the camera's interface socket
+        except ViscaException as exc:
+            print(f"Could not clear the camera's interface socket: {exc}")
 
     def _send_command(self, command_hex: str, query=False) -> Optional[bytes]:
         """Constructs a message based ong the given payload, sends it to the camera,
