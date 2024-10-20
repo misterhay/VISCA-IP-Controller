@@ -603,17 +603,15 @@ class Camera:
             self._send_command('04 37 03 00')
 
     def save_preset(self, preset_num: int):
-        """Saves many of the camera's settings in one of 16 slots"""
-        if not 0 <= preset_num <= 15:
-            raise ValueError('Preset num must be 0-15 inclusive')
-
+        """Saves many of the camera's settings in one of 16 slots (some cameras even have 128 or 129 slots)"""
+        if not 0 <= preset_num <= 128:
+            raise ValueError('Preset number must be 0-128 inclusive')
         self._send_command(f'04 3F 01 0{preset_num:x}')
 
     def recall_preset(self, preset_num: int):
         """Instructs the camera to recall one of the 16 saved presets"""
-        if not 0 <= preset_num <= 16:
-            raise ValueError('Preset num must be 0-15 inclusive')
-
+        if not 0 <= preset_num <= 128:
+            raise ValueError('Preset number must be 0-128 inclusive')
         self._send_command(f'04 3F 02 0{preset_num:x}')
 
     @staticmethod
