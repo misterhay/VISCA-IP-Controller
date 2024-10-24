@@ -75,7 +75,7 @@ class Camera:
         """Attempts to receive the response of the most recent command.
         Sometimes we don't get the response because this is UDP.
         In that case we just increment num_missed_responses and move on.
-        :raises ViscaException: if the response if an error and not an acknowledge or completion
+        :raises ViscaException: if the response is an error and not an acknowledge or completion
         """
         while True:
             try:
@@ -639,9 +639,16 @@ class Camera:
         return self._zero_padded_bytes_to_int(response[1:], signed=False)
 
     def get_focus_mode(self) -> str:
-        """:return: either 'auto' or 'manual'"""
+        """:return: either 'auto' or 'manual'
+        :raises ViscaException: if the response is not 2 or 3
+        """
         modes = {2: 'auto', 3: 'manual'}
         response = self._send_command('04 38', query=True)
-        return modes[response[-1]]
+        try:
+            mode = modes[response[-1]]
+        except KeyError:
+            mode = 'unknown'
+            raise ViscaException(response)
+        return mode
 
     # other inquiry commands
