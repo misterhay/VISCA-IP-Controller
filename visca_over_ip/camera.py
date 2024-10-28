@@ -606,16 +606,16 @@ class Camera:
             self._send_command('04 37 03 00')
 
     def save_preset(self, preset_num: int):
-        """Saves many of the camera's settings in one of 16 slots (some cameras even have 128 or 129 slots)"""
-        if not 0 <= preset_num <= 128:
-            raise ValueError('Preset number must be 0-128 inclusive')
-        self._send_command(f'04 3F 01 0{preset_num:x}')
+        """Saves many of the camera's settings in one of 16 slots (some cameras even have as many as 255 slots)"""
+        if not 0 <= preset_num <= 255:
+            raise ValueError('Preset number must be 0-255 inclusive')
+        self._send_command(f'04 3F 01 {preset_num:02x}')
 
     def recall_preset(self, preset_num: int):
-        """Instructs the camera to recall one of the 16 saved presets"""
-        if not 0 <= preset_num <= 128:
-            raise ValueError('Preset number must be 0-128 inclusive')
-        self._send_command(f'04 3F 02 0{preset_num:x}')
+        """Instructs the camera to recall one of the 255 saved presets"""
+        if not 0 <= preset_num <= 255:
+            raise ValueError('Preset number must be 0-255 inclusive')
+        self._send_command(f'04 3F 02 {preset_num:02x}')
 
     @staticmethod
     def _zero_padded_bytes_to_int(zero_padded: bytes, signed=True) -> int:
