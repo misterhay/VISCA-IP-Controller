@@ -131,3 +131,4 @@ dmypy.json
 .vscode/settings.json
 
 docs/html
+*.text
