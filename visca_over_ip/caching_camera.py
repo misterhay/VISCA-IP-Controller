@@ -8,10 +8,18 @@ class CachingCamera(Camera):
     def __init__(self, ip, port=52381):
         super().__init__(ip, port)
 
+        initial_focus_mode = None
+        try:
+            initial_focus_mode = super().get_focus_mode()
+        except ViscaException as e:
+            print(f"Warning: Could not fetch initial focus mode for CachingCamera: {e}")
+            # The camera might be offline or an error occurred.
+            # initial_focus_mode remains None.
+
         self.state = {
-            'focus_mode': super().get_focus_mode(),
-            'pan_tilt_stop': False,
-            'zoom_stop': False
+            'focus_mode': initial_focus_mode,
+            'pan_tilt_stop': False, # Assuming camera is not actively panning/tilting on init
+            'zoom_stop': False      # Assuming camera is not actively zooming on init
         }
 
     def get_focus_mode(self) -> str:
