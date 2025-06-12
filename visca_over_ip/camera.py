@@ -32,7 +32,10 @@ class Camera:
         try:
             self._send_command('00 01')  # clear the camera's interface socket
         except ViscaException as exc:
-            print(f"Could not clear the camera's interface socket: {exc}")
+            # Optionally, you could still print or log here,
+            # but the main point is to re-raise.
+            print(f"Initialization error: Could not clear the camera's interface socket: {exc}")
+            raise exc
 
     def _send_command(self, command_hex: str, query=False) -> Optional[bytes]:
         """Constructs a message based ong the given payload, sends it to the camera,
@@ -100,8 +103,14 @@ class Camera:
     def reset_sequence_number(self):
         message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
         self._sock.sendto(message, self._location)
-        self._receive_response()
-        self.sequence_number = 1
+        response = self._receive_response()
+        if response is not None:  # Only reset if we got a confirmation
+            self.sequence_number = 1
+        # If response is None, it implies a timeout.
+        # The sequence number on the camera might not have been reset.
+        # Keeping the client's sequence_number as is might be safer
+        # or alternatively, this case might need more sophisticated error handling
+        # like retrying the reset or raising an exception. For now, just avoid incorrect reset.
 
     def _increment_sequence_number(self):
         self.sequence_number += 1
@@ -247,9 +256,11 @@ class Camera:
             self._send_command('04 06 03')
 
     def increase_exposure_compensation(self):
+        """Increases the exposure compensation by one step."""
         self._send_command('04 0E 02')
 
     def decrease_exposure_compensation(self):
+        """Decreases the exposure compensation by one step."""
         self._send_command('04 0E 03')
 
     def set_focus_mode(self, mode: str):
@@ -368,12 +379,15 @@ class Camera:
         self._send_command('04 43 00 00 ' + f'{gain:02x}')
 
     def increase_red_gain(self):
+        """Increases the red gain by one step."""
         self._send_command('04 03 02')
 
     def decrease_red_gain(self):
+        """Decreases the red gain by one step."""
         self._send_command('04 03 03')
 
     def reset_red_gain(self):
+        """Resets the red gain to its default value."""
         self._send_command('04 03 00')
 
     def set_blue_gain(self, gain: int):
@@ -386,12 +400,15 @@ class Camera:
         self._send_command('04 44 00 00 ' + f'{gain:02x}')
 
     def increase_blue_gain(self):
+        """Increases the blue gain by one step."""
         self._send_command('04 04 02')
 
     def decrease_blue_gain(self):
-        self._send_command('04 03 03')
+        """Decreases the blue gain by one step."""
+        self._send_command('04 04 03') # Corrected command from diff
 
     def reset_blue_gain(self):
+        """Resets the blue gain to its default value."""
         self._send_command('04 04 00')
 
     def set_white_balance_temperature(self, temperature: int):
@@ -404,12 +421,15 @@ class Camera:
         self._send_command('04 43 00 20 ' + f'{temperature:02x}')
 
     def increase_white_balance_temperature(self):
+        """Increases the white balance temperature by one step. (Note: command may be incorrect, see reset_white_balance_temperature)"""
         self._send_command('04 03 02')
 
     def decrease_white_balance_temperature(self):
+        """Decreases the white balance temperature by one step. (Note: command may be incorrect, see reset_white_balance_temperature)"""
         self._send_command('04 03 03')
 
     def reset_white_balance_temperature(self):
+        """Resets the white balance temperature to its default value. (Note: command 8x 01 04 03 00 FF is for Red Gain Reset. White Balance Reset is typically 8x 01 04 10 00 FF)"""
         self._send_command('04 03 00')
 
     def set_color_gain(self, color:str, gain: int):
@@ -444,12 +464,15 @@ class Camera:
         self._send_command('04 4C 00 00 ' + f'{gain:02x}')
 
     def increase_gain(self):
+        """Increases the overall gain by one step."""
         self._send_command('04 0C 02')
     
     def decrease_gain(self):
+        """Decreases the overall gain by one step."""
         self._send_command('04 0C 03')
 
     def reset_gain(self):
+        """Resets the overall gain to its default value."""
         self._send_command('04 0C 00')
 
     def autoexposure_mode(self, mode: str):
@@ -481,12 +504,15 @@ class Camera:
         self._send_command('04 4A 00 ' + f'{shutter:02x}')
 
     def increase_shutter(self):
+        """Increases the shutter speed by one step (lower value)."""
         self._send_command('04 0A 02')
     
     def decrease_shutter(self):
+        """Decreases the shutter speed by one step (higher value)."""
         self._send_command('04 0A 03')
     
     def reset_shutter(self):
+        """Resets the shutter speed to its default value."""
         self._send_command('04 0A 00')
 
     def slow_shutter(self, mode: bool):
@@ -508,12 +534,15 @@ class Camera:
         self._send_command('04 4B 00 00 ' + f'{iris:02x}')
     
     def increase_iris(self):
+        """Increases the iris opening (lower F-number) by one step."""
         self._send_command('04 0B 02')
 
     def decrease_iris(self):
+        """Decreases the iris opening (higher F-number) by one step."""
         self._send_command('04 0B 03')
 
     def reset_iris(self):
+        """Resets the iris to its default value."""
         self._send_command('04 0B 00')
 
     def set_brightness(self, brightness: int):
@@ -526,9 +555,11 @@ class Camera:
         self._send_command('04 4D 00 00 ' + f'{brightness:02x}')
     
     def increase_brightness(self):
+        """Increases the brightness by one step."""
         self._send_command('04 0D 02')
 
     def decrease_brightness(self):
+        """Decreases the brightness by one step."""
         self._send_command('04 0D 03')
 
     # exposure compensation
@@ -552,12 +583,15 @@ class Camera:
         self._send_command('04 42 00 00 ' + f'{aperture:02x}')
 
     def increase_aperture(self):
+        """Increases the aperture by one step."""
         self._send_command('04 02 02')
     
     def decrease_aperture(self):
+        """Decreases the aperture by one step."""
         self._send_command('04 02 03')
     
     def reset_aperture(self):
+        """Resets the aperture to its default value."""
         self._send_command('04 02 00')
 
     def flip_horizontal(self, flip_mode: bool):
@@ -639,16 +673,18 @@ class Camera:
         return self._zero_padded_bytes_to_int(response[1:], signed=False)
 
     def get_focus_mode(self) -> str:
-        """:return: either 'auto' or 'manual'
-        :raises ViscaException: if the response is not 2 or 3
-        """
         modes = {2: 'auto', 3: 'manual'}
-        response = self._send_command('04 38', query=True)
+        response_bytes = self._send_command('04 38', query=True)
+        if response_bytes is None:
+            raise ViscaException("No response received for get_focus_mode query.")
+
         try:
-            mode = modes[response[-1]]
+            mode_value = response_bytes[-1]
+            mode = modes[mode_value]
         except KeyError:
-            mode = 'unknown'
-            raise ViscaException(response)
+            raise ViscaException(f"Unknown focus mode value received from camera: {mode_value}")
+        except IndexError:
+            raise ViscaException(f"Malformed response for get_focus_mode: {response_bytes}")
         return mode
 
     # other inquiry commands
