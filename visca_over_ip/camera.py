@@ -16,26 +16,36 @@ class Camera:
     or set them up to use different ports.
     """
     def __init__(self, ip: str, port=52381):
-        """:param ip: the IP address or hostname of the camera you want to talk to.
-        :param port: the port number to use. 52381 is the default for most cameras.
-        """
         self._location = (ip, port)
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # for UDP stuff
-        self._sock.bind(('', 0))
-        self._port = self._sock.getsockname()[1]  
-        self._sock.settimeout(0.1)
+
+        # Command socket (ephemeral)
+        self._cmd_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._cmd_sock.bind(('', 0))
+        self._cmd_sock.settimeout(0.1)
+        self._cmd_port = self._cmd_sock.getsockname()[1]
+
+        # Inquiry socket (fixed port 52381)
+        self._inq_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._inq_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            self._inq_sock.bind(('', port))
+        except OSError as e:
+            raise RuntimeError(f"Failed to bind inquiry socket to port {port}. Is it in use?") from e
+        self._inq_sock.settimeout(0.1)
 
         self.num_missed_responses = 0
         self.sequence_number = 0  # This number is encoded in each message and incremented after sending each message
         self.num_retries = 5
         self.reset_sequence_number()
+
         try:
-            self._send_command('00 01')  # clear the camera's interface socket
+            # Clear the camera's interface socket via command socket
+            self._send_command('00 01', query=False)
         except ViscaException as exc:
             print(f"Could not clear the camera's interface socket: {exc}")
 
     def _send_command(self, command_hex: str, query=False) -> Optional[bytes]:
-        """Constructs a message based ong the given payload, sends it to the camera,
+        """Constructs a message based on the given payload, sends it to the camera,
         and blocks until an acknowledge or completion response has been received.
         :param command_hex: The body of the command as a hex string. For example: "00 02" to power on.
         :param query: Set to True if this is a query and not a standard command.
@@ -55,10 +65,12 @@ class Camera:
             sequence_bytes = self.sequence_number.to_bytes(4, 'big')
             message = payload_type + payload_length + sequence_bytes + payload_bytes
 
-            self._sock.sendto(message, self._location)
+            # Select socket based on query flag
+            sock = self._inq_sock if query else self._cmd_sock
+            sock.sendto(message, self._location)
 
             try:
-                response = self._receive_response()
+                response = self._receive_response(sock)
             except ViscaException as exc:
                 exception = exc
             else:
@@ -66,12 +78,13 @@ class Camera:
                     return response[1:-1]
                 elif not query:
                     return None
+
         if exception:
             raise exception
         else:
             raise NoQueryResponse(f'Could not get a response after {self.num_retries} tries')
 
-    def _receive_response(self) -> Optional[bytes]:
+    def _receive_response(self, sock: socket.socket) -> Optional[bytes]:
         """Attempts to receive the response of the most recent command.
         Sometimes we don't get the response because this is UDP.
         In that case we just increment num_missed_responses and move on.
@@ -79,7 +92,7 @@ class Camera:
         """
         while True:
             try:
-                response = self._sock.recv(32)
+                response = sock.recv(32)
                 response_sequence_number = int.from_bytes(response[4:8], 'big')
 
                 if response_sequence_number < self.sequence_number:
@@ -99,8 +112,8 @@ class Camera:
 
     def reset_sequence_number(self):
         message = bytearray.fromhex('02 00 00 01 00 00 00 01 01')
-        self._sock.sendto(message, self._location)
-        self._receive_response()
+        self._cmd_sock.sendto(message, self._location)
+        self._receive_response(self._cmd_sock)
         self.sequence_number = 1
 
     def _increment_sequence_number(self):
