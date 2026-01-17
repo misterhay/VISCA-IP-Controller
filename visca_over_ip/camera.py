@@ -629,8 +629,10 @@ class Camera:
     def get_pantilt_position(self) -> Tuple[int, int]:
         """:return: two signed integers representing the absolute pan and tilt positions respectively"""
         response = self._send_command('06 12', query=True)
-        pan_bytes = response[2:6]
-        tilt_bytes = response[6:10]
+        # _send_command strips the header from the
+        # response so 1:5 5:9 is correct here.
+        pan_bytes = response[1:5]
+        tilt_bytes = response[5:9]
         return self._zero_padded_bytes_to_int(pan_bytes), self._zero_padded_bytes_to_int(tilt_bytes)
 
     def get_zoom_position(self) -> int:
