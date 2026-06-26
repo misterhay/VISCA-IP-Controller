@@ -1,5 +1,6 @@
 import socket
 from typing import Optional, Tuple
+from contextlib import suppress
 
 from visca_over_ip.exceptions import ViscaException, NoQueryResponse
 
@@ -126,7 +127,10 @@ class Camera:
         If you want to connect to another camera which uses the same communication port,
         first call this method on the first camera.
         """
-        self._sock.close()
+        with suppress(Exception):
+            self._cmd_sock.close()
+        with suppress(Exception):
+            self._inq_sock.close()
 
     def set_power(self, power_state: bool):
         """Powers on or off the camera based on the value of power_state"""
